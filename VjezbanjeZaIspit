@@ -1,0 +1,3299 @@
+--Zadatak 1
+Use NORTHWND
+Go
+Select CompanyName, City, Fax 
+From dbo.Customers
+Where ContactName Like '%Restaurant%' Or City ='Madrid' And Fax Is Not Null
+Order by CompanyName 
+
+--Zadatak2
+
+Select ContactName, Country, CompanyName
+From Suppliers
+Where (Country Like 'Germany' Or Country Like 'France') And (CompanyName Like 'A%' Or CompanyName Like 'E%' Or CompanyName Like 'P%')
+
+--Zadatak 3
+
+Use pubs
+Go
+Select title, type, price, (price - (0.2*price)) As 'Cijena sa popustom'
+From titles
+Where (price - (0.2*price)) between 10 And 20 
+Order by  type, 'Cijena sa popustom' Desc
+
+--Zadatak 4
+
+Use AdventureWorks2019
+Go
+Select min(ListPrice), max(ListPrice), avg (ListPrice)
+From Production.Product
+
+--Zadatak 5 
+Use AdventureWorks2019
+Select Top 10 ProductID, Sum (OrderQty) As 'Kolicina', Sum(UnitPrice*OrderQty) As 'Zarada'
+From Sales.SalesOrderDetail
+Group by ProductID
+Order by Kolicina Desc
+
+
+Use AdventureWorks2019
+Select ProductID, Sum(UnitPrice*OrderQty) As 'Zarada'
+From Sales.SalesOrderDetail
+Group by ProductID
+Having Sum(UnitPrice*OrderQty)>30000
+
+--Zadatak 6
+Use AdventureWorksLT2019
+Select Top 10 With Ties ProductCategoryID, count(ProductID) As 'Broj produkata'
+From SalesLT.Product
+Group by ProductCategoryID 
+Order by 'Broj produkata' Desc
+
+--Zadatak 7
+Use AdventureWorksLT2019
+Select  'Dobrodošli, ' + FirstName + ' ' + LastName + ' ' + 'trenutno vrijeme je: ' +  RIGHT(CONVERT(nvarchar(20), GETDATE(), 100),7) As 'Poruka za kupca'
+From SalesLT.Customer
+
+--Zadatak 8
+
+Use NORTHWND
+Select Lower(LastName + '.' + FirstName + '@' + City + '.com') As Email, 
+  Right(Replace(Substring(Reverse(Convert(nvarchar(MAx),Notes)+Title+ Address),10,15),' ', '#'),8) As Lozinka,
+  DATEDIFF("yyyy",BirthDate, GetDate()) As 'Starost'
+From Employees
+
+
+
+--Lab 4 fit vjezbe
+
+--Zadatak 1 sa vjezbi fit 
+
+Use NORTHWND
+Go
+
+Select E.LastName +' ' + E.FirstName, count(O.EmployeeID) As 'Broj narudzbi'
+From dbo.Employees As E 
+Inner Join Orders As O
+On E.EmployeeID = O.EmployeeID
+Group by E.LastName +' ' + E.FirstName
+Order by [Broj narudzbi] Desc
+
+--5 ili vise narudzbi
+Select E.LastName +' ' + E.FirstName, count(O.EmployeeID) As 'Broj narudzbi'
+From dbo.Employees As E 
+Inner Join Orders As O
+On E.EmployeeID = O.EmployeeID
+Where DATEPART(Month,O.OrderDate)=7 AND DATEPART(Year,O.OrderDate)=1997
+Group by E.LastName +' ' + E.FirstName
+Having count(O.EmployeeID) >= 5
+Order by [Broj narudzbi] Desc
+
+
+--Zadatak 2
+
+Select P.ProductName As 'Naziv Proizvoda', 
+	S.CompanyName AS Dobavljac, 
+	S.Phone		As Telefon,
+	P.UnitsInStock AS Zalihe,
+	Sum(Od.Quantity) As 'Prodano proizvoda'
+From Products AS P
+Inner Join Suppliers AS S
+On P.SupplierID = S.SupplierID 
+Inner Join [Order Details] AS Od
+On P.ProductID = Od.ProductID
+Where P.UnitsInStock = 0
+Group by P.ProductName, S.CompanyName, S.Phone	,P.UnitsInStock
+Order by Dobavljac 
+
+--Zadatak3 
+
+Use pubs
+Go
+Select T.title As 'Ime knjige', P.pub_name As Izdavac, St.stor_name As Prodavnica, Sum( S.qty * T.price) As Zarada
+From titles AS T
+Inner Join sales AS S
+On T.title_id = S.title_id 
+Inner Join stores AS St
+On S.stor_id=St.stor_id
+Inner Join publishers As P
+On T.pub_id=P.pub_id
+Where P.pub_name Like 'New Moon Books'
+Group by  T.title, P.pub_name , St.stor_name
+Order by Prodavnica,[Ime knjige]
+
+
+--Zadatak4
+
+Use AdventureWorksLT2019
+Go
+Select C.FirstName +' '  +C.LastName AS 'Ime i prezime', Count(SOH.CustomerID) As 'Ukupan broj narudzbi', IsNull(Sum(SOD.OrderQty),0) As 'Ukupna kolicina svih kupljenih proizvoda', 
+		A.CountryRegion As Region, A.City As Grad 
+From SalesLT.Customer As C
+Left Outer Join SalesLT.SalesOrderHeader  As SOH
+On C.CustomerID = SOH.CustomerID
+Left Outer Join SalesLT.SalesOrderDetail As SOD
+On SOH.SalesOrderID = SOD.SalesOrderID
+Inner Join SalesLT.CustomerAddress As CA
+On C.CustomerID = CA.CustomerID
+Inner Join SalesLT.Address As A
+On CA.AddressID = A.AddressID
+Where A.CountryRegion Like 'United States' OR A.City Like 'Montreal' 
+Group by  C.FirstName +' '  +C.LastName, A.CountryRegion, A.City
+
+
+--Zadatak 5
+Use AdventureWorks2019
+Go
+Select P.FirstName + ' ' + P.LastName As 'Ime i prezime', 
+		CC.CardType  As 'Tip Kartice',
+		CC.CardNumber As 'Broj kartice',
+		SOH.SalesOrderNumber As 'Broj narudzbe',
+		SOH.OrderDate As 'Datum narudzbe'
+From  Sales.Customer As K
+Inner Join Person.Person As P
+On K.PersonID = P.BusinessEntityID
+Inner Join Sales.PersonCreditCard As PCC
+On P.BusinessEntityID= PCC.BusinessEntityID
+Inner Join Sales.CreditCard As CC
+On PCC.CreditCardID = CC.CreditCardID
+Inner Join Sales.SalesOrderHeader As SOH
+On CC.CreditCardID = SOH.CreditCardID
+Where  P.FirstName + ' ' + P.LastName  like 'Jordan Green'
+
+--Lab 5
+--Fit priprema za parcijalu
+
+--Zadatak 1
+
+Use NORTHWND
+Go
+Select C.CompanyName, C.ContactName, C.Address, C.Phone, Sum(OD.UnitPrice * OD.Quantity) As 'Ukupno utroseno'
+From dbo.Customers As C
+Inner Join dbo.Orders As O
+On C.CustomerID = O.CustomerID
+Inner Join dbo.[Order Details] As OD
+On O.OrderID = OD.OrderID
+Where DATEPART(MONTH,O.OrderDate)=2 And C.City Like 'London'
+Group by C.CompanyName, C.ContactName, C.Address, C.Phone
+
+
+--Zadatak 2
+Use pubs
+Go
+Select E.fname + ' ' + E.lname As 'Ime i prezime', MIN(S.qty) AS MinimalnaKolicina, Max(S.qty) AS MaksimalnalnaKolicina, 
+		AVG(S.qty) As SrednjaKolicina, SUM(S.qty) As UkupnaKolicina
+From dbo.employee As E
+Inner Join dbo.publishers As P
+On E.pub_id = P.pub_id
+Inner Join dbo.titles As T
+On P.pub_id = T.pub_id 
+Inner Join dbo.sales As S
+On T.title_id = S.title_id
+Group by E.fname + ' ' + E.lname
+Having SUM(S.qty)>100 And AVG(S.qty) Between 20 And 25
+
+
+--Zadatak 3
+
+Use AdventureWorks2019
+Select P.FirstName + ' ' + P.LastName As 'Ime i prezime', E.EmailAddress, CC.CardType, CC.CardNumber, CC.ExpYear
+From Sales.Customer As C
+Inner Join Person.Person As P
+On C.CustomerID = P.BusinessEntityID
+Inner Join Person.EmailAddress As E
+On P.BusinessEntityID = E.BusinessEntityID
+Inner Join Sales.PersonCreditCard As PCC
+On P.BusinessEntityID = PCC.BusinessEntityID
+Inner Join Sales.CreditCard AS CC
+On PCC.CreditCardID = CC.CreditCardID
+Left Outer Join Sales.SalesOrderHeader AS SOH
+On CC.CreditCardID = SOH.CreditCardID
+Where CC.CardType Like 'Vista' And CC.ExpYear=2008
+Order by LastName Asc
+
+--Lab 5
+--Zadatak 1
+
+Use NORTHWND
+Go
+Select P.ProductName,
+	(Select MAX(OD.Quantity) 
+	From [Order Details] AS OD
+	Where OD.ProductID = P.ProductID)
+From dbo.Products As P
+
+--Zadatak 2
+
+Select C.CompanyName, C.ContactName, C.City, C.Phone,
+From Customers As C
+Where  10000 <  (Select SUM(OD.Quantity * OD.UnitPrice)
+				From Orders As O inner join  [Order Details] As OD
+				On O.OrderID = OD.OrderID
+				Where C.CustomerID = O.CustomerID)
+
+
+
+--Zadatak 3
+Use AdventureWorks2019
+GO
+Select Top 1 Rate
+From (Select Top 4 Rate
+From HumanResources.EmployeePayHistory
+Order by Rate DESC) AS Plate
+Order by Rate Asc
+
+
+--Podupiti
+--Zadatak 1: 
+/*
+Koristeæi tabelu Order Details kreirati upit kojim æe se prebrojati broj narudžbi kojima je UnitPrice:
+a) za 20 KM veæa od minimalne vrijednosti UniPrice
+b) za 10 KM manja od maksimalne vrijednosti UniPrice
+*/
+
+Use NORTHWND
+Select COUNT(OD.OrderID)
+From [Order Details] As OD 
+Where OD.UnitPrice In (Select MIN(UnitPrice) + 20 
+						From [Order Details])
+
+
+/*
+Koristeæi tabelu Order Details kreirati upit kojim æe se dati pregled zapisa kojima se UnitPrice 
+nalazi u rasponu od +10 KM u odnosu na minimum i -10 u odnosu na maksimum. Upit traba da sadrži OrderID.
+*/
+
+Use NORTHWND
+Select OD.OrderID, OD.UnitPrice
+From [Order Details] As OD 
+Where OD.UnitPrice Between (Select MIN(UnitPrice) + 10 
+						From [Order Details]) And  (Select MAX(UnitPrice) -10 
+						From [Order Details])
+
+Order by 2 Desc
+
+
+/*
+Koristeæi tabelu Orders kreirati upit kojim æe se prebrojati broj naruèitelja kojima se Freight 
+nalazi u rasponu od 10 KM u odnosu na srednju vrijednost Freighta. Upit traba da sadrži CustomerID 
+i ukupan broj po CustomerID.
+*/
+
+Use NORTHWND
+Select CustomerID, COUNT(CustomerID) As BrojKupaca 
+From dbo.Orders
+Where Freight between ( Select Avg(Freight) - 10
+						From dbo.Orders)
+						And (Select Avg(Freight) + 10
+						From dbo.Orders)
+
+
+Group by CustomerID
+Order by 2 Desc
+
+
+/*
+Koristeæi tabele Orders i Order Details kreirati upit kojim æe se dati pregled ukupnih kolièina ostvarenih po OrderID.
+*/
+
+Select OrderID, (Select Max(Quantity)
+					From [Order Details] As OD
+					Where O.OrderID = OD.OrderID)  As 'Ukupna kolicina'
+From Orders As O
+Order by 2 Desc
+
+
+/*
+Koristeæi tabele Orders i Employees kreirati upit kojim æe se dati pregled ukupno realiziranih narudžbi po uposleniku.
+Upit treba da sadrži prezime i ime uposlenika, te ukupan broj narudžbi.
+*/
+
+Select E.LastName, E.FirstName, (Select count(O.OrderID) 
+									From Orders AS O 
+									Where O.EmployeeID = E.EmployeeID) As 'Ukupno naurudzbi'
+From Employees As E
+Order by [Ukupno naurudzbi] Desc
+
+--drugacije rjesenje sa inner Join
+select E.FirstName, E.LastName, count(O.OrderID) as UkupnoNarudzbi
+from NORTHWND.dbo.Orders as O inner join NORTHWND.dbo.Employees as E
+on O.EmployeeID = E.EmployeeID
+group by E.FirstName, E.LastName
+Order by UkupnoNarudzbi Desc
+
+
+/*
+Koristeæi tabele Orders i Order Details kreirati upit kojim æe se dati pregled narudžbi kupca 
+u kojima je naruèena kolièina veæa od 10.
+Upit treba da sadrži CustomerID i Kolièinu, te ukupan broj narudžbi.
+*/
+
+--pokusaj neki
+Select  O.CustomerID, (Select Sum(OD.Quantity) 
+			From [Order Details] AS OD
+			Where O.OrderID = OD.OrderID) As 'Ukupna kolicina'
+From Orders As O
+Where 10 < (Select Sum(OD.Quantity) 
+			From [Order Details] AS OD
+			Where O.OrderID = OD.OrderID)
+
+Order by [Ukupna kolicina] Desc
+
+--tacno rjesenje
+Select O.CustomerID, OD.Quantity AS Kolicina, COUNT(O.OrderID) As UkupanBroj
+From Orders As O
+Inner Join [Order Details] As OD
+ON O.OrderID = OD.OrderID
+Where OD.Quantity > 10
+Group by O.CustomerID, OD.Quantity
+Order by UkupanBroj Desc
+
+/*
+Koristeæi tabelu Products kreirati upit kojim æe se dati pregled proizvoda kojima je 
+stanje na stoku veæe od srednje vrijednosti stanja na stoku. Upit treba da sadrži ProductName i UnitsInStock.
+*/
+
+Select ProductName, UnitsInStock
+From Products
+Where UnitsInStock > (Select Avg(UnitsInStock)
+						From Products )
+Order by UnitsInStock Desc
+
+/*
+Koristeæi tabelu Products kreirati upit kojim æe se prebrojati broj proizvoda 
+po dobavljaèu kojima je stanje na stoku veæe od srednje vrijednosti stanja na stoku. 
+Upit treba da sadrži SupplierID i ukupan broj proizvoda.
+*/
+
+Select SupplierID, (Select COUNT(ProductID) 
+					 From Products
+				     Where UnitsInStock > (Select AVG(UnitsInStock)
+											From Products))As UkupanBrojProizvoda
+From Products
+Group by SupplierID
+
+
+/*
+Iz tabele Order Details baze Northwind dati prikaz ID narudžbe, 
+ID proizvoda i jediniène cijene, te razliku cijene proizvoda
+u odnosu na srednju vrijednost cijene za sve proizvode u tabeli. Rezultat sortirati prema vrijednosti razlike
+u rastuæem redoslijedu.
+*/
+
+Select OrderID, ProductID, UnitPrice, (Select AVG(UnitPrice) 
+									    From [Order Details] ) AS Srednja,
+										(UnitPrice - (Select AVG(UnitPrice)
+													From [Order Details] )) As RazlikaCijene
+From [Order Details]
+Order by RazlikaCijene Desc
+
+/*
+Iz tabele Products baze Northwind za sve proizvoda kojih ima na stanju dati prikaz ID proizvoda, 
+naziv proizvoda i stanje zaliha, te razliku stanja zaliha proizvoda u odnosu na srednju vrijednost 
+stanja za sve proizvode u tabeli. Rezultat sortirati prema vrijednosti razlike u 
+opadajuæem redoslijedu.*/
+
+Select ProductID, ProductName,UnitsInStock, ( UnitsInStock - (Select AVG(UnitsInStock) 
+												 From Products)) AS 'RazlikaStanjuZaliha'
+From Products
+
+/*
+Upotrebom tabela Orders i Order Details baze Northwind prikazati ID narudžbe i kupca koji je kupio
+više od 10 komada proizvoda èiji je ID 15.*/
+
+Select OrderID, CustomerID
+From Orders AS O
+Where (Select Quantity 
+	   From [Order Details] AS OD
+	   Where (O.OrderID = OD.OrderID) And OD.ProductID = 15 )>10
+
+
+/*
+Upotrebom tabela sales i stores baze pubs prikazati ID i naziv prodavnice u kojoj je naruèeno
+više od 1 komada publikacije èiji je ID 6871.*/
+
+Use pubs
+Select stor_id, stor_name
+From stores AS st
+Where 1 < (Select qty
+			From sales as sa
+			Where (st.stor_id = sa.stor_id) and sa.ord_num= '6871')
+
+
+
+
+
+--Zadaci insert update delete 
+
+
+create database radna
+use radna
+
+create table uposlenik
+(
+	uposlenikID int,
+	emp_id char(9),
+	fname varchar(20),
+	minit char(1),
+	lname varchar(30),
+	job_id smallint,
+	job_lvl tinyint,
+	pub_id char(4),
+	hire_date datetime constraint df_hire_date default getdate(),
+	CONSTRAINT pk_uposlenik primary key (uposlenikID) 
+)
+
+create table autor
+(
+	au_id varchar(11),
+	au_lname varchar(40),
+	au_fname varchar(20),
+	phone char(15),
+	address varchar(40) not null,
+	city varchar(20) not null,
+	state char(2) not null,
+	zip char(5) not null,
+	contract bit,
+	CONSTRAINT pk_au_id primary key (au_id)
+)
+
+create table naslov 
+(
+	title_id varchar(6),
+	title varchar(80),
+	type char(12),
+	pub_id char(4),
+	price money,
+	advance money,
+	royalty int,
+	ytd_sales int,
+	notes varchar(200),
+	pubdate datetime,
+	CONSTRAINT pk_title_id primary key(title_id)
+)
+
+create table naslov_autor
+(
+	au_id varchar(11),
+	title_id varchar(6),
+	au_ord tinyint,
+	royaltyper int,
+	CONSTRAINT pk_naslov_autor primary key (au_id, title_id),
+	CONSTRAINT fk_naslov_autor_autor foreign key(au_id) references autor (au_id),
+	CONSTRAINT fk_naslov_autor_naslov foreign key (title_id) references naslov (title_id)
+)
+
+
+/*
+3. Insert (import) podataka.
+	a) u tabelu autori podatke iz tabele authors baze pubs, ali tako da se u koloni phone 
+	   tabele autor prve 3 cifre smjeste u zagradu.
+	b) u tabelu naslovi podatke iz tabele titles baze pubs, ali tako da se izvrši 
+	   zaokruživanje vrijednosti (podaci ne smiju imati decimalne vrijednosti) u koloni price
+	c) u tabelu naslov_autor podatke iz tabele titleauthor baze pubs, pri èemu æe se u 
+	   koloni au_ord vrijednosti iz tabele titleauthor zamijeniti na sljedeæi naèin:
+	1 -> 101
+	2 -> 102
+	3 -> 103
+*/
+
+--a)
+Insert into autor
+Select au_id, au_lname, au_fname, '(' + LEFT(phone,3) + ')' + substring(phone, 4, 9), address, city, state, zip, contract
+From pubs.dbo.authors 
+select*
+from autor
+
+--b)
+
+Insert into naslov
+Select title_id, title, type,pub_id,ROUND(price,0), advance, royalty, ytd_sales, notes, pubdate
+From pubs.dbo.titles
+Select *
+From naslov
+
+
+--c)
+
+Insert into naslov_autor
+Select au_id,title_id, (au_ord + 100), royaltyper
+From pubs.dbo.titleauthor
+Select *
+From naslov_autor
+
+
+
+/*
+Update i Alter table
+4. Izvršiti update podataka u koloni contract tabele autor po sljedeæem pravilu:
+	0 -> NE
+	1 -> DA
+*/
+
+
+alter table autor
+alter column contract char(2)
+
+Update autor
+set contract = 'NE'
+where contract = '0'
+
+alter table autor
+alter column contract char(2)
+
+Update autor
+set contract = 'DA'
+where contract = '1'
+Select *
+From autor
+
+alter table autor
+alter column contract char(2)
+
+Update autor
+set contract = 'NE'
+where contract = 'Ne'
+
+
+/*
+6. Kopirati tabelu autor u tabelu autor1, izbrisati sve podatke, 
+a nakon toga u tabelu autor1 importovati podatke iz tabele autor uz uslov 
+da ID autora zapoèinje brojevima 1, 2 ili 3 i da autor ima zakljuèen ugovor (contract).
+*/
+
+
+select *
+into autor1
+from radna.dbo.autor
+
+delete 
+from autor1
+
+insert into autor1
+select *
+from autor
+where au_id like '[123]%' and contract = 'DA'
+select *
+from autor1
+
+/* 
+7. U tabelu autor1 importovati podatke iz tabele autor uz uslov da adresa poèinje cifrom 3, 
+a na treæem mjestu se nalazi cifra 1.
+*/
+
+
+delete 
+from autor1
+
+Insert into autor1
+Select* 
+From autor
+Where address like '[3_1]%'
+Select*
+from autor1
+
+
+/*
+8. Kopirati tabelu naslov u tabelu naslov1, izbrisati sve podatke, a nakon toga u tabelu 
+   naslov1 importovati podatke iz tabele naslov na naèin da se cijena (price) koriguje na sljedeæi naèin:
+	- naslov èija je cijena veæa ili jednaka 15 KM cijenu smanjiti za 20% (podaci trebaju biti zaokruženi na 2 decimale)
+	- naslov èija je cijena manja od 15 KM cijenu smanjiti za 15% (podaci trebaju biti zaokruženi na 2 decimale)
+*/
+
+Select *
+into naslov1
+From naslov
+
+delete
+from naslov1
+
+Insert into naslov1
+select title_id, title,type,pub_id, round((price-price*0.2), 2), advance,royalty,ytd_sales,notes,pubdate
+from naslov
+where price >= 15 
+
+select *
+from naslov1
+
+
+Insert into naslov1
+select *
+from naslov
+
+
+/*
+9. Kopirati tabelu naslov_autor u tabelu naslov_autor1, a nakon toga u tabelu naslov_autor1 dodati novu kolonu isbn.
+*/
+
+select *
+into naslov_autor1
+from naslov_autor
+
+alter table naslov_autor1
+add isbn varchar(10)
+
+/*
+10. Kolonu isbn popuniti na naèin da se iz au_id preuzmu prve 3 cifre i srednja crta, 
+te se na to dodaju posljednje 4 cifre iz title_id.
+*/
+
+
+
+
+Update naslov_autor1
+set isbn = LEFT(au_id,3) + '/' + RIGHT(title_id,4)
+
+select *
+from naslov_autor1
+
+/*
+11. U tabelu autor1 dodati kolonu sifra koja æe se popunjavati sluèajno 
+generisanim nizom znakova, pri èemu je broj znakova ogranièen na 15.
+*/
+
+alter table autor1
+add sifra as left (newid(), 15)
+
+
+/*
+12. Tabelu Order Details iz baze Northwind kopirati u tabelu detalji_narudzbe.
+*/
+
+
+Select *
+into detalji_narudzbe
+from NORTHWND.dbo.[Order Details]
+
+insert detalji_narudzbe
+select*
+from NORTHWND.dbo.[Order Details]
+
+delete detalji_narudzbe
+/*
+13. U tabelu detalji_narudzbe dodati izraèunate kolone cijena_s_popustom i ukupno. 
+cijena_s_popustom æe se raèunati pomoæu kolona UnitPrice i Discount, a ukupno pomoæu kolona Quantity i cijena_s_popustom. 
+Obje kolone trebaju biti formirani kao numerièki tipovi sa dva decimalna mjesta.
+*/
+alter table detalji_narudzbe
+drop column cijena_s_popustom
+
+alter table detalji_narudzbe
+add cijena_s_popustom as Round((UnitPrice - UnitPrice * Discount),2)
+
+Select *
+from detalji_narudzbe
+
+alter table detalji_narudzbe
+add ukupno as Round( Quantity*(UnitPrice - UnitPrice * Discount),2)
+
+
+/*
+14. U tabelu detalji_narudzbe izvršiti insert podataka iz tabele Order Details baze Northwind.
+*/
+
+
+--nesto sam
+
+Create database pokusajNeki
+Go
+
+Use pokusajNeki
+Go
+
+create table uposlenik
+(
+	uposlenikID int,
+	emp_id int Constraint FK_uposlenik_emplojer foreign key references emplojer (emp_id),
+	fname varchar(20),
+	minit char(1),
+	lname varchar(30),
+	job_id smallint,
+	job_lvl tinyint,
+	pub_id char(4),
+	hire_date datetime constraint df_hire_date default getdate(),
+	CONSTRAINT pk_uposlenik primary key (uposlenikID) 
+	
+);
+
+Create table emplojer
+(
+	emp_id int Identity(1,1) Constraint Pk_Emplojer Primary key,
+	emp_name nvarchar(10) null 
+)
+
+drop table uposlenik
+
+--POGLEDI
+
+*/
+
+/*
+Koristeæi tabele Employees, EmployeeTerritories, Territories i Region baze Northwind kreirati 
+pogled view_Employee koji æe sadržavati prezime i ime uposlenika kao polje ime i prezime, 
+teritoriju i regiju koju pokrivaju. Uslov je da su stariji od 30 godina i pokrivaju terirotiju Western.
+*/
+
+Use NORTHWND
+Go
+
+Create view view_RegijeiTeritorijeEmployees
+As
+Select E.FirstName + ' ' + E.LastName As 'Ime i prezime', T.TerritoryDescription, R.RegionDescription
+From  Employees As E
+Inner Join EmployeeTerritories As ET
+On E.EmployeeID = ET.EmployeeID
+Inner Join Territories AS T
+On ET.TerritoryID = T.TerritoryID
+Inner Join Region As R
+On T.RegionID = R.RegionID
+Where year(getdate()) - year(E.BirthDate) > 30  And R.RegionDescription = 'Western'
+Go
+
+Drop view view_RegijeiTeritorijeEmployees
+
+select *
+from view_RegijeiTeritorijeEmployees
+
+
+/*
+Koristeæi tabele Employee, Order Details i Orders baze Northwind kreirati pogled view_Employee2 
+koji æe sadržavati ime uposlenika i ukupnu vrijednost svih narudžbi koje je taj 
+uposlenik napravio u 1996. godini ako je ukupna vrijednost veæa od 50000, pri èemu æe se 
+rezultati sortirati uzlaznim redoslijedom prema polju ime.
+*/
+
+Create view view_Employee2 
+As
+Select E.FirstName, Sum(OD.UnitPrice * OD.Quantity) As UkupnaSuma 
+From Employees As E
+Inner Join Orders AS O
+On E.EmployeeID = O.EmployeeID
+Inner Join [Order Details] AS OD
+On O.OrderID = OD.OrderID
+Where year(O.OrderDate) = 1996
+Group by E.FirstName 
+Having Sum(OD.UnitPrice * OD.Quantity) > 50000
+Go
+
+
+Drop view view_Employee2
+
+select *
+from view_Employee2
+
+/*
+Koristeæi tabele Orders i Order Details kreirati pogled koji æe sadržavati polja: 
+Orders.EmployeeID, [Order Details].ProductID i suma po UnitPrice.
+*/
+
+create view ood as 
+
+select o.EmployeeID, od.ProductID, round(sum(od.UnitPrice),2) as 'Suma'
+from Orders as o inner join [Order Details] as od 
+on od.OrderID = o.OrderID
+group by o.EmployeeID, od.ProductID
+go
+
+select*
+from ood
+drop view ood
+
+/*
+Koristeæi prethodno kreirani pogled izvršiti ukupno sumiranje po uposlenicima. Sortirati po ID uposlenika.
+*/
+
+select EmployeeID, sum(Suma)
+from ood
+group by EmployeeID
+order by 1 asc
+
+
+/*
+Koristeæi tabele Categories, Products i Suppliers kreirati pogled koji æe sadržavati polja: 
+CategoryName, ProductName i CompanyName. 
+*/
+
+create view cps as
+
+select c.CategoryName, p.ProductName, s.CompanyName
+from Categories as c inner join Products as p
+on p.CategoryID = c.CategoryID
+inner join Suppliers as s
+on p.SupplierID = s.SupplierID
+go
+
+
+drop view cps
+
+
+/*
+Koristeæi prethodno kreirani pogled prebrojati broj proizvoda po kompanijama. Sortirati po nazivu kompanije.
+*/
+
+Select CompanyName, COUNT(*)
+From cps
+group by CompanyName
+Order by CompanyName
+
+
+--Procedure
+
+/*
+Kreirati tabele UposlenikZDK i UposlenikHNK koje æe formirati pogled view_part_UposlenikKantoni. 
+Obje tabele æe sadržavati polja UposlenikID, NacionalniID, LoginID, RadnoMjesto i Kanton. 
+Sva polja su obavezan unos. Tabela UposlenikZDK æe se oznaèiti brojem 1, a tabela UposlenikHNK brojem 2.
+*/
+
+Use radna
+
+Create table UposlenikZDK
+(
+	UposlenikID int not null, 
+	NacionalniID nvarchar(15) not null, 
+	LoginID nvarchar(50) not null, 
+	RadnoMjesto nvarchar(250) not null,
+	Kanton Smallint not null Constraint Ck_Kanton_K1 Check(Kanton = 1),
+	Constraint pk_UposlenikZDK primary key(UposlenikID,Kanton)
+)
+
+Create table UposlenikHNK
+(
+	UposlenikID int not null, 
+	NacionalniID nvarchar(15) not null, 
+	LoginID nvarchar(50) not null, 
+	RadnoMjesto nvarchar(250) not null,
+	Kanton Smallint not null Constraint Ck_Kanton_K2 Check(Kanton = 2),
+	Constraint pk_UposlenikHNK primary key(UposlenikID,Kanton)
+)
+
+
+
+/*
+Kreirati dijeljeni pogled (partitioned view) view_part_UposlenikKantoni koji æe podatke koji se 
+unose u njega distribuirati u tabele UposlenikZDK i UposlenikHNK. 
+Nakon kreiranja u pogled ubaciti 4 podatka, po dva za svaku od tabela. 
+(Tabela UposlenikZDK ima oznaku 1, a UposlenikHNK oznaku 2).
+*/
+
+
+Create view view_part_UposlenikKantoni
+as
+Select UposlenikID, NacionalniID, LoginID, RadnoMjesto, Kanton
+From UposlenikZDK
+Union All
+Select UposlenikID, NacionalniID, LoginID, RadnoMjesto, Kanton
+From UposlenikHNK
+go
+
+Insert Into view_part_UposlenikKantoni
+Values(1,'medo', 'afadsfasd','domar', 1)
+
+
+Insert Into view_part_UposlenikKantoni
+Values(2,'edo', 'fsasd','glupan', 1)
+
+
+Insert Into view_part_UposlenikKantoni
+Values(3,'gsdd', 'asfafasf','kasim', 2)
+
+
+Insert Into view_part_UposlenikKantoni
+Values(5,'afdf', 'fgssda','pidro', 2)
+
+
+/*
+Kreirati tabele Kvartal1 i Kvatal2 koje æe formirati pogled view_part_ProdajaKvartali. 
+Obje tabele æe sadržavati polja ProdajaID, NazivKupca, Kvartal. Sva polja su obavezan unos. 
+Tabela Kvartal1 æe se oznaèiti brojem 1, a tabela Kvartal2 brojem 2.
+Kreirati dijeljeni pogled (partitioned view) view_part_ProdajaKvartali koji æe podatke koji se 
+unose u njega distribuirati u tabele Kvartal1 i Kvartal2.
+Nakon kreiranja u pogled ubaciti 4 podatka, po dva za svaku od tabela. (Tabela Kvartal1 ima oznaku 1, a Kvartal2 oznaku 2).
+*/
+
+Create table Kvartal1
+(
+	ProdajaID int not null,
+	NazivKupca nvarchar(25) not null,
+	Kvartal Smallint not null Constraint Ck_kvartal1 Check(Kvartal=1)
+	Constraint pk_kvartal1 primary key(ProdajaID,Kvartal)
+)
+
+Create table Kvartal2
+(
+	ProdajaID int not null,
+	NazivKupca nvarchar(25) not null,
+	Kvartal Smallint not null Constraint Ck_kvartal2 Check(Kvartal=2)
+	Constraint pk_kvartal2 primary key(ProdajaID,Kvartal)
+)
+
+
+
+Create view view_part_ProdajaKvartali
+
+As
+
+Select ProdajaID,NazivKupca, Kvartal
+From Kvartal1
+Union All
+Select ProdajaID,NazivKupca, Kvartal
+From Kvartal2
+Go
+
+
+/*Kreirati proceduru nad tabelama HumanResources.Employee i Person.Person kojom æe se definirati 
+sljedeæi ulazni parametri: EmployeeID, FirstName, LastName, Gender. 
+Proceduru kreirati tako da je prilikom izvršavanja moguæe unijeti bilo koji broj parametara 
+(možemo ostaviti bilo koje polje bez unijetog parametra), te da procedura daje rezultat ako je 
+zadovoljena bilo koja od vrijednosti koje su navedene kao vrijednosti parametara.
+Nakon kreiranja pokrenuti proceduru za sljedeæe vrijednosti parametara:
+1. EmployeeID = 20, 
+2. LastName = Miller
+3. LastName = Abercrombie, Gender = M 
+*/
+
+Use AdventureWorks2019
+
+Create procedure Procudere1
+    @EmployeeID int = null, 
+	@FirstName nvarchar(50) = null,
+	@LastName nvarchar(50) = null,
+	@Gender char(1) = null
+	As 
+	Begin
+	Select E.BusinessEntityID,P.FirstName,P.LastName, E.Gender
+	From AdventureWorks2019.HumanResources.Employee As E
+	inner join AdventureWorks2019.Person.Person As P
+	On E.BusinessEntityID = P.BusinessEntityID
+	Where @EmployeeID = E.BusinessEntityID Or
+		  @FirstName= P.FirstName Or
+		  @LastName = P.LastName Or
+		  @Gender = E.Gender
+	End
+
+Execute Procudere1 @EmployeeID = 20
+Execute Procudere1 @LastName = 'Miller'
+Execute Procudere1 @LastName = 'Abercrombie'
+Execute Procudere1 @Gender = 'M' 
+ 
+
+ --zadaciVJezbe 10 sedmica
+
+/*
+7. Kreirati proceduru Narudzba nad tabelama Customers, Products, Order Details i Order baze Northwind kojom će se definirati 
+sljedeći ulazni parametri: ContactName, ProductName, UnitPrice, Quantity i Discount. 
+Proceduru kreirati tako da je prilikom izvršavanja moguće unijeti bilo koji broj parametara 
+(možemo ostaviti bilo koji parametar bez unijete vrijednosti), te da procedura daje rezultat ako je unijeta vrijednost bilo kojeg parametra.
+Nakon kreiranja pokrenuti proceduru za sljedeće vrijednosti parametara:
+1. ContactName = Mario Pontes
+2. Quantity = 10 ili Discount = 0.15
+3. UnitPrice = 20
+*/
+Use NORTHWND
+Go
+Create Or ALter Procedure procedura_Vjezbe10
+		@ContactName nvarchar(50)= null,
+		@Quantity int = null,
+		@Discount float =null,
+		@UnitPrice int =null
+As
+Begin
+Select C.ContactName,P.ProductName,OD.UnitPrice,OD.Quantity,OD.Discount
+From NORTHWND.dbo.Customers AS C 
+Inner Join NORTHWND.dbo.Orders As O 
+On C.CustomerID = O.CustomerID
+Inner Join NORTHWND.dbo.[Order Details] As OD
+On O.OrderID = OD.OrderID
+Inner Join NORTHWND.dbo.Products As P
+On OD.ProductID = P.ProductID
+Where C.ContactName = @ContactName OR
+	  OD.Quantity = @Quantity OR
+	  OD.UnitPrice = @UnitPrice OR
+	  OD.Discount = @Discount
+End
+GO
+
+Execute procedura_Vjezbe10 @ContactName = 'Mario Pontes'
+Go
+
+Execute procedura_Vjezbe10 @Quantity = 10 , @Discount = 0.15
+
+Execute procedura_Vjezbe10 @UnitPrice = 20
+
+/*
+8. Kreirati proceduru nad tabelama Production.Product, Production.ProductSubcategory, Production.ProductListPriceHistory, 
+Purchasing.ProductVendor kojom će se definirati parametri: p_name za naziv proizvoda, Color, ps_name za naziv potkategorije, 
+ListPrice sa zaokruživanjem na dvije decimale, AverageLeadTime, MinOrderQty, MaxOrderQty i Razlika 
+kao razliku maksimalne i minimalne naručene količine. Dati odgovarajuće nazive. 
+Proceduru kreirati tako da je prilikom izvršavanja moguće unijeti bilo koji broj parametara 
+(možemo ostaviti bilo koje parametar bez unijete vrijednosti), te da procedura daje rezultat ako je unijeta vrijednost bilo kojeg parametra. 
+Zapisi u proceduri trebaju biti sortirani po vrijednostima parametra ListPrice.
+Nakon kreiranja pokrenuti proceduru za sljedeće vrijednosti parametara:
+1. MaxOrderQty = 1000
+2. Razlika = 350
+3. Color = Red i naziv potkategorije = Helmets
+*/
+
+Use AdventureWorks2019
+Go
+Create or Alter procedure novaProcedura
+	@p_name nvarchar(100) = null,
+	@Color nvarchar(30) = null,
+	@ps_name nvarchar(100)=null,
+	@ListPrice float =null,
+	@AverageLeadTime float =null,
+	@MinOrderQty float=null, 
+	@MaxOrderQty float=null,
+	@Razlika float =null
+	
+As
+Begin
+Select P.Name,P.Color, PS.Name, Round(PH.ListPrice,2), PV.AverageLeadTime, PV.MinOrderQty, PV.MaxOrderQty,(PV.MaxOrderQty - PV.MinOrderQty) AS Razlika 
+From Production.Product As P
+Inner Join Production.ProductSubcategory As PS
+On P.ProductSubcategoryID = PS.ProductSubcategoryID
+Inner Join Production.ProductListPriceHistory AS PH
+On P.ProductID = PH.ProductID
+Inner join Purchasing.ProductVendor AS PV
+On P.ProductID = PV.ProductID
+Where P.Name = @p_name Or
+	  P.Color = @Color Or 
+	  PS.Name = @ps_name Or 
+	  PH.ListPrice = @ListPrice Or
+	  PV.AverageLeadTime = @AverageLeadTime Or
+	  PV.MinOrderQty = @MinOrderQty Or  
+	  PV.MaxOrderQty = @MaxOrderQty Or
+	  (PV.MaxOrderQty - PV.MinOrderQty) = @Razlika
+Order by PH.ListPrice Desc
+End
+Go
+
+Execute novaProcedura  @MaxOrderQty = 1000
+
+Execute novaProcedura @Razlika = 350
+
+Execute novaProcedura @Color = Red, @ps_name = 'Helmets'
+
+
+
+/*
+9. Izvršiti izmjenu kreirane procedure tako da prosljeđuje samo one zapise u kojima je razlika veća od 500.
+Nakon kreiranja pokrenuti proceduru bez postavljanja vrijednosti za bilo koji parametar, a zatim za sljedeće vrijednosti parametara:
+1. MinOrderQty = 100 
+2. Color = Red
+3. ps_name= Helmets
+*/
+
+Alter procedure novaProcedura
+	@p_name nvarchar(100) = null,
+	@Color nvarchar(30) = null,
+	@ps_name nvarchar(100)=null,
+	@ListPrice float =null,
+	@AverageLeadTime float =null,
+	@MinOrderQty float=null, 
+	@MaxOrderQty float=null,
+	@Razlika float =null
+	
+As
+Begin
+Select P.Name,P.Color, PS.Name, Round(PH.ListPrice,2), PV.AverageLeadTime, PV.MinOrderQty, PV.MaxOrderQty,(PV.MaxOrderQty - PV.MinOrderQty) AS Razlika 
+From Production.Product As P
+Inner Join Production.ProductSubcategory As PS
+On P.ProductSubcategoryID = PS.ProductSubcategoryID
+Inner Join Production.ProductListPriceHistory AS PH
+On P.ProductID = PH.ProductID
+Inner join Purchasing.ProductVendor AS PV
+On P.ProductID = PV.ProductID
+Where PV.MaxOrderQty - PV.MinOrderQty > 500 And
+(
+	  P.Name = @p_name Or
+	  P.Color = @Color Or 
+	  PS.Name = @ps_name Or 
+	  PH.ListPrice = @ListPrice Or
+	  PV.AverageLeadTime = @AverageLeadTime Or
+	  PV.MinOrderQty = @MinOrderQty Or  
+	  PV.MaxOrderQty = @MaxOrderQty
+)
+Order by PH.ListPrice Desc
+End
+Go
+
+
+Execute novaProcedura 
+
+Execute novaProcedura  @MinOrderQty = 100 
+
+Execute novaProcedura @Color = 'Red'
+
+Execute novaProcedura @ps_name= 'Helmets'
+
+
+/*
+ZADAĆA
+------
+10. Koristeći tabelu Sales.Customer kreirati proceduru proc_account_number kojom 
+će se definirati parametar br_cif_account za pregled broja zapisa po broju cifara 
+u koloni AccountNumber. Proceduru kreirati tako da je prilikom izvršavanja moguće 
+unijeti bilo koji broj parametara (možemo ostaviti bilo koje parametar bez unijete vrijednosti), 
+te da procedura daje rezultat ako je unijeta vrijednost bilo kojeg parametra. 
+Procedura treba da vrati broj cifara (1-, 2- cifreni) i ukupan broj zapisa po cifrenosti.
+Nakon kreiranja zasebno pokrenuti proceduru za 1-, 2-, 3- i 5-cifrene brojeve.
+*/
+
+Go
+Create view view_cifrenost
+As
+	Select Len(Cast(Substring(AccountNumber,CHARINDEX('W',AccountNumber)+1,8) AS int)) AS Cifrenost, COUNT(*) As BrojZapisa
+	From AdventureWorks2019.Sales.Customer
+	group by Len(Cast(Substring(AccountNumber,CHARINDEX('W',AccountNumber)+1,8) AS int))
+	Go
+	Select *
+	FRom view_cifrenost
+Create procedure proc_account_number
+	 @br_cif_account int =null
+
+As
+Begin
+	Select * 
+	From view_cifrenost
+	Where Cifrenost = @br_cif_account
+End
+GO
+
+
+Execute proc_account_number @br_cif_account = 3
+
+
+/*
+1. U bazi radna kreirati tabele ocjena (student_id int, predmet_id int i ocjena int) i ocjena_logovi (student_id, predmet_id, datum_pristupa datetime i opis char (15)).
+*/
+
+
+
+/*-------------------------------------------------------------------------------------------------
+	14_PRIMJERISPITA OD Muhameda
+*/
+
+/*
+a) Kreirati bazu podataka pod vlastitim brojem indeksa.
+*/
+use NORTHWND
+drop database HamzaBeganovic_132
+
+/*
+Prilikom kreiranja tabela voditi raèuna o meðusobnom odnosu izmeðu tabela.
+b) Kreirati tabelu radnik koja æe imati sljedeæu strukturu:
+	radnikID, cjelobrojna varijabla, primarni kljuè
+	drzavaID, 15 unicode karaktera
+	loginID, 30 unicode karaktera
+	sati_god_odmora, cjelobrojna varijabla
+	sati_bolovanja, cjelobrojna varijabla
+*/
+
+create table radnik
+(
+	radnikID int not null,
+	drzavaID nvarchar(15),
+	loginID nvarchar(30),
+	sati_god_odmora int,
+	sati_bolovanja int,
+	Constraint pk_radnik primary key(radnikID)
+)
+ 
+
+
+
+/*
+c) Kreirati tabelu kupovina koja æe imati sljedeæu strukturu:
+	kupovinaID, cjelobrojna varijabla, primarni kljuè
+	status, cjelobrojna varijabla
+	radnikID, cjelobrojna varijabla
+	br_racuna, 15 unicode karaktera
+	naziv_dobavljaca, 50 unicode karaktera
+	kred_rejting, cjelobrojna varijabla
+*/
+	
+	create table kupovina
+	(
+		kupovinaID int,
+		status int,
+		radnikID int,
+		br_racun nvarchar(15),
+		naziv_dobavljaca nvarchar(50), 
+		kred_rejting int,
+		Constraint pk_kupovina primary key(kupovinaID),
+		Constraint fk_radnik foreign key (radnikID) References radnik (radnikID)
+	)
+
+
+
+/*
+d) Kreirati tabelu prodaja koja æe imati sljedeæu strukturu:
+	prodavacID, cjelobrojna varijabla, primarni kljuè
+	prod_kvota, novèana varijabla
+	bonus, novèana varijabla
+	proslogod_prodaja, novèana varijabla
+	naziv_terit, 50 unicode karaktera
+*/
+
+	Create table prodaja 
+	(
+		prodavacID int,
+		prod_kvota money, 
+		bonus money,
+		proslogod_prodaja money,
+		naziv_terit nvarchar(50), 
+	)
+
+
+--2. Import podataka
+/*
+a) Iz tabela humanresources.employee baze AdventureWorks2014 u tabelu radnik importovati podatke po sljedeæem pravilu:
+	BusinessEntityID -> radnikID
+	NationalIDNumber -> drzavaID
+	LoginID -> loginID
+	VacationHours -> sati_god_odmora
+	SickLeaveHours -> sati_bolovanja
+*/
+use HamzaBeganovic_132
+go
+insert into radnik
+Select  BusinessEntityID, NationalIDNumber,LoginID, VacationHours,SickLeaveHours
+From AdventureWorks2019.HumanResources.Employee
+Select* 
+From radnik
+
+
+/*
+b) Iz tabela purchasing.purchaseorderheader i purchasing.vendor baze AdventureWorks2014 u tabelu kupovina 
+importovati podatke po sljedeæem pravilu:
+	PurchaseOrderID -> kupovinaID
+	Status -> status
+	EmployeeID -> radnikID
+	AccountNumber -> br_racuna
+	Name -> naziv_dobavljaca
+	CreditRating -> kred_rejting
+*/
+Use HamzaBeganovic_132
+Go
+Insert into kupovina
+Select POH.PurchaseOrderID,POH.Status, POH.EmployeeID,V.AccountNumber,V.Name,V.CreditRating
+From AdventureWorks2019.Purchasing.PurchaseOrderHeader AS POH
+Inner Join AdventureWorks2019.Purchasing.Vendor AS V
+On POH.VendorID = V.BusinessEntityID
+
+GO
+Select *
+From kupovina
+
+
+
+--ILI
+/*
+insert into kupovina
+(kupovinaID,status,radnikID,br_racun,naziv_dobavljaca, kred_rejting)
+select ppo.PurchaseOrderID, ppo.Status, ppo.EmployeeID, pv.AccountNumber, pv.Name, pv.CreditRating
+from AdventureWorks2019.Purchasing.PurchaseOrderHeader as ppo inner join AdventureWorks2019.Purchasing.Vendor as pv
+on ppo.VendorID = pv.BusinessEntityID
+*/
+
+/*
+c) Iz tabela sales.salesperson i sales.salesterritory baze AdventureWorks2014 u tabelu prodaja importovati 
+podatke po sljedeæem pravilu:
+	BusinessEntityID -> prodavacID
+	SalesQuota -> prod_kvota
+	Bonus -> bonus
+	SalesLastYear -> proslogod_prodaja
+	Name -> naziv_terit
+*/
+--napomena:
+--SalesLastYear se uzima iz tabele SalesTerritory
+	
+	Insert into prodaja
+	Select SP.BusinessEntityID,SP.SalesQuota,SP.Bonus,ST.SalesLastYear,ST.Name
+	From AdventureWorks2019.Sales.SalesPerson AS SP
+	Inner Join AdventureWorks2019.Sales.SalesTerritory AS ST
+	On ST.TerritoryID = SP.TerritoryID
+
+	Select *
+	From prodaja
+	Go
+--3.
+/*
+Iz tabela radnik i kupovina kreirati pogled view_drzavaID koji æe imati sljedeæu strukturu: 
+	- naziv dobavljaèa,
+	- drzavaID
+Uslov je da u pogledu budu samo oni zapisi èiji ID države poèinje ciframa u rasponu od 40 do 49, 
+te da se kombinacije dobavljaèa i drzaveID ne ponavljaju.
+*/
+	
+	Create view view_drzavaID
+	AS
+		Select k.naziv_dobavljaca,r.drzavaID
+		From radnik AS r inner Join kupovina AS k
+		On r.radnikID = k.radnikID
+		Where left(r.drzavaID,2) between 40 and 49 
+
+
+		Select *
+		from view_drzavaID
+GO
+		
+
+--4.
+/*
+Koristeæi tabele radnik i prodaja kreirati pogled view_klase_prihoda koji æe sadržavati ID radnika, 
+ID države, koliènik prošlogodišnje prodaje i prodajne kvote, te oznaku klase koje æe biti formirane prema pravilu: 
+	- <10			- klasa 1 
+	- >=10 i <20	- klasa 2 
+	- >=20 i <30	- klasa 3
+*/
+Use hamza132
+Go
+	Create view view_klase_prihoda
+	As
+	Select r.radnikID,r.drzavaID,(p.proslogod_prodaja / p.prod_kvota) AS kolicnik, 1 as klasa 
+	From radnik as r
+	Inner Join prodaja AS p
+	On r.radnikID = p.prodavacID
+	where (p.proslogod_prodaja / p.prod_kvota) <10
+	union 
+	Select r.radnikID,r.drzavaID,(p.proslogod_prodaja / p.prod_kvota) AS kolicnik, 2 as klasa 
+	From radnik as r
+	Inner Join prodaja AS p
+	On r.radnikID = p.prodavacID
+	where (p.proslogod_prodaja / p.prod_kvota) >=10 and (p.proslogod_prodaja / p.prod_kvota) <20 
+	union
+	Select r.radnikID,r.drzavaID,(p.proslogod_prodaja / p.prod_kvota) AS kolicnik, 3 as klasa 
+	From radnik as r
+	Inner Join prodaja AS p
+	On r.radnikID = p.prodavacID
+	where (p.proslogod_prodaja / p.prod_kvota) >=20 and (p.proslogod_prodaja / p.prod_kvota) <30
+	
+	select *
+	from view_klase_prihoda
+	Go
+--5.
+/*
+Koristeæi pogled view_klase_prihoda kreirati proceduru proc_klase_prihoda koja æe prebrojati broj klasa. 
+Procedura treba da sadrži naziv klase i ukupan broj pojavljivanja u pogledu view_klase_prihoda.
+Sortirati prema broju pojavljivanja u opadajuæem redoslijedu.
+*/
+
+
+	Create procedure proc_klase_prihoda 
+	AS
+	Begin
+		Select klasa, COUNT(*) As BrojKlasa
+		From view_klase_prihoda
+		Group by klasa
+		Order by BrojKlasa Desc
+	End
+	Go
+
+	Exec proc_klase_prihoda
+	Go
+--6.
+/*
+Koristeæi tabele radnik i kupovina kreirati pogled view_kred_rejting koji æe sadržavati kolone drzavaID, 
+kreditni rejting i prebrojani broj pojavljivanja kreditnog rejtinga po ID države.
+*/
+
+	Create view view_kred_rejting
+	As
+		Select r.drzavaID,k.kred_rejting, COUNT(kred_rejting) AS BrojKredRejtinga
+		From radnik as r
+		Inner Join kupovina AS k
+		On r.radnikID = k.radnikID 
+		Group by r.drzavaID,k.kred_rejting
+	Go
+--7.
+/*
+Koristeæi pogled view_kred_rejting kreirati proceduru proc_kred_rejting koja æe davati informaciju o 
+najveæem prebrojanom broju pojavljivanja kreditnog rejtinga. Procedura treba da sadrži oznaku 
+kreditnog rejtinga i najveæi broj pojavljivanja za taj kreditni rejting. Proceduru pokrenuti 
+za sve kreditne rejtinge (1, 2, 3, 4, 5). 
+*/
+
+	Create or alter proc proc_kred_rejting
+		@kred_rejting int
+	As
+	Begin
+		Select kred_rejting, MAX(BrojKredRejtinga)
+		From view_kred_rejting
+		Where @kred_rejting = kred_rejting
+		Group by kred_rejting
+	End
+	Go
+
+	Exec proc_kred_rejting 1
+	Exec proc_kred_rejting 2
+	Exec proc_kred_rejting 3
+	Exec proc_kred_rejting 4
+	Exec proc_kred_rejting 5
+--8.
+/*
+Kreirati tabelu radnik_nova i u nju prebaciti sve zapise iz tabele radnik. Nakon toga, 
+svim radnicima u tabeli radnik_nova èije se ime u koloni loginID sastoji od 3 i manje slova, 
+loginID promijeniti u sluèajno generisani niz znakova.
+*/
+Go
+	select *
+	into radnik_nova
+	From radnik
+	
+	select loginID
+	from radnik_nova
+	where loginID not like 'adventure%'
+	
+	Update radnik_nova 
+	Set loginID = left(NEWID(),30)                   
+	where len(loginID) - 1 - charindex('\',loginID) <=3
+	 
+	Select * 
+	From radnik_nova
+	Go
+
+
+--9
+/*
+a) Kreirati pogled view_sume koji æe sadržavati sumu sati godišnjeg odmora i sumu sati bolovanja 
+za radnike iz tabele radnik_nova kojima je loginID promijenjen u sluèajno generisani niz znakova 
+*/
+		
+		create view  view_sume 
+		as
+		select SUM(sati_god_odmora) as SumaGod,SUM(sati_bolovanja) as SumaBolovanja
+		from radnik_nova
+		where loginID not like 'adventure%'
+		group by loginID
+		Go
+
+		Select*
+		From view_sume
+		GO
+/*
+b) Izraèunati odnos (koliènik) sume bolovanja i sume godišnjeg odmora. Ako je odnos veæi od 0.5 
+dati poruku 'Suma bolovanja je prevelika. Odnos iznosi: ______'. U suprotnom dati poruku 
+'Odnos je prihvaljiv i iznosi: _____'
+*/
+select cast(1263 as real)/cast (1387 as real)
+	
+	Create or alter view view_provjera
+	as
+		Select Convert(nvarchar,CAST(SumaBolovanja as real) / CAST(SumaGod as int)) as odnos
+		from view_sume
+
+
+		Select 'Suma bolovanja je prevelika. Odnos iznosi: ' + convert(nvarchar,odnos) as poruka1
+		From view_provjera
+		where odnos > 0.5
+		union
+
+		Select  'Suma bolovanja je prevelika. Odnos iznosi: ' + convert(nvarchar,odnos) as poruka2
+		From view_provjera
+		where odnos <=0.5
+
+
+
+--10.
+/*
+a) Kreirati backup baze na default lokaciju.
+b) Obrisati bazu.
+c) Napraviti restore baze.
+*/
+	
+
+		
+	backup database HamzaBeganovic_132
+	to disk = ' HamzaBeganovic_132.bak'
+
+	drop database HamzaBeganovic_132
+
+	restore database HamzaBeganovic_132
+	from disk = 'hamza132.bak'
+	with replace
+
+/*
+Koristeæi kolonu AccountNumber tabele Sales.Customer prebrojati broj zapisa prema broju cifara 
+brojèanog dijela podatka iz ove kolone. Rezultat sortirati u rastuæem redoslijedu.
+*/
+Use AdventureWorks2019
+Select AccountNumber 
+From AdventureWorks2019.Sales.Customer
+Go
+
+Create view view_brojCifara
+As
+	Select Len(Cast(Substring(AccountNumber,CHARINDEX('W',AccountNumber)+1,8) As int)) As Cifrenost, COUNT(*) As BrojCifara
+	From AdventureWorks2019.Sales.Customer
+	Group by Len(Cast(Substring(AccountNumber,CHARINDEX('W',AccountNumber)+1,8) As int))
+
+	Go
+	Select*
+	From view_brojCifara
+	Go
+
+	Create or alter procedure proc_cifrenost
+		@Cifre int = null
+	As
+	Begin
+		Select Cifrenost,BrojCifara
+		From view_brojCifara
+		Where Cifrenost = @Cifre
+	End
+
+	Exec proc_cifrenost @Cifre=5
+
+
+	--Vjezbe 11 zadaci
+
+	Go
+	use radna
+	go
+
+	create table ocjena
+(
+	student_id int, 
+	predmet_id int,
+	ocjena int
+)
+
+create table ocjena_logovi
+(
+	student_id int,
+	predmet_id int,
+	datum_pristupa datetime,
+	opis char (15)
+)
+GO
+
+/*
+2. Nad tabelom ocjena kreirati okidač ins_del_ocjena kojim će se evidentirati datum i vrijeme izvršenja insert, odnosno, delete akcije, te opis izvedene akcije.
+*/
+
+	Create trigger  ins_del_ocjena
+	On ocjena For Insert,Delete
+	As
+	Insert into ocjena_logovi
+	Select student_id,predmet_id,GETDATE(),'Insert' From inserted
+	Union
+
+	Select student_id,predmet_id,GETDATE(),'Delete' From deleted
+	Go
+
+	/*
+3. Nad tabelom ocjena kreirati okidač update_ocjena kojim će se evidentirati datum i vrijeme izvršenja update akcije, te opis izvedene akcije.
+*/
+
+Create or alter trigger update_ocjena 
+On ocjena After Update 
+AS
+Insert into ocjena_logovi
+Select student_id,predmet_id,GETDATE(), 'Update' From inserted 
+GO
+
+
+
+/*
+4. U tabelu ocjena unijeti 5 zapisa. Iz tabele izbrisati zapis 
+	predmet_id = 11 i student_id = 1
+*/
+		
+	Insert into ocjena
+	values (1,5,10),
+		   (1,11,9),
+		   (5,3,6),
+		   (4,2,9),
+		   (7,10,8)
+
+		go
+		delete ocjena
+		where student_id = 1 and predmet_id=11
+		
+		select *
+		from ocjena
+
+		select *
+		from ocjena_logovi
+
+/*
+5. Izvršiti update tabele ocjena tako što će se predmet_id = 10 postaviti na 20.
+*/
+
+Update ocjena
+Set predmet_id = 20
+Where predmet_id = 10
+
+
+--vjezba iz vjebih 11
+/*
+6. U bazu radna iz baze AdventureWorks2014 šeme Production prekopirati tabele Product, WorkOrder i WorkOrderRouting. Zadržati iste nazive tabela. Tabele smjestiti u defaultnu šemu.
+*/
+
+	use radna
+	Select* 
+	into Product
+	From AdventureWorks2019.Production.Product
+
+	Select* 
+	into WorkOrder
+	From AdventureWorks2019.Production.WorkOrder
+
+	Select* 
+	into WorkOrderRouting
+	From AdventureWorks2019.Production.WorkOrderRouting
+
+
+	
+
+/*
+7. U kopiranim tabelama u bazi radna postaviti iste PK i potrebne FK kako bi se ostvarila veza između tabela.
+*/
+Use radna
+		
+	Alter table Product
+	Add Constraint PK_Product_ProductID primary key (ProductID) 
+
+	Alter table WorkOrder
+	Add Constraint PK_WorkOrder_WorkOrderID primary key (WorkOrderID)
+	
+	Alter table WorkOrder
+	Add Constraint FK_WorkOrder_Product_ProductID foreign key (ProductID) references Product (ProductID) 
+
+	Alter table  WorkOrderRouting
+	Add Constraint PK_WorkOrderRouting_WorkOrderID_ProductID_OperationSequence primary key (WorkOrderID,ProductID,OperationSequence)  
+
+	Alter table  WorkOrderRouting
+	Add Constraint FK_WorkOrderRouting_WorkOrder_WorkOrderID foreign key (WorkOrderID) references WorkOrder(WorkOrderID)  
+/*
+8. Koristeći prethodno kreirane tabele, uraditi sljedeće operacije:
+a) U tabeli Product kreirati ograničenje nad kolonom ListPrice kojim će biti onemogućen unos negativnog podatka.
+b) U tabeli WorkOrder kreirati ograničenje nad kolonom EndDate kojim će se onemogućiti unos podatka manjeg od StartDate.
+*/
+	--a)
+	Alter table Product
+	Add Constraint check_listPrice Check(ListPrice >= 0)
+
+	--b)
+	Alter table WorkOrder
+	Add Constraint check_EndDate Check(EndDate >= StartDate)
+	Go
+/*
+9. Kreirati proceduru koja će izmijeniti podatke u koloni LocationID tabele WorkOrderRouting po sljedećem principu:
+	10 -> A
+	20 -> B
+	30 -> C
+	40 -> D
+	45 -> E
+	50 -> F
+	60 -> G
+*/
+
+Select *
+From WorkOrderRouting
+
+	Alter table WorkOrderRouting
+	Alter column LocationID char(2)
+Go
+
+	Create or Alter procedure proc_izmjenaPodataka
+	As
+	Begin
+			Update WorkOrderRouting
+			Set LocationID = 'A'
+			Where LocationID= '10'
+
+			Update WorkOrderRouting
+			Set LocationID = 'B'
+			Where LocationID = '20'
+			
+			Update WorkOrderRouting
+			Set LocationID = 'C'
+			Where LocationID = '30'
+			
+			Update WorkOrderRouting
+			Set LocationID = 'D'
+			Where LocationID = '40'
+
+			
+			Update WorkOrderRouting
+			Set LocationID = 'E'
+			Where LocationID = '45'
+
+			
+			Update WorkOrderRouting
+			Set LocationID = 'F'
+			Where LocationID = '50'
+
+			
+			Update WorkOrderRouting
+			Set LocationID = 'G'
+			Where LocationID = '60'
+	End
+
+	Execute proc_izmjenaPodataka
+/*
+10. Obrisati ograničenje kojim se definisala veza između tabela Product i WorkOrder.
+*/
+	Alter table WorkOrder
+	Drop Constraint FK_WorkOrder_Product_ProductID
+
+/*
+11. Podaci u koloni ProductNumber imaju formu AB-1234. Neka slova označavaju klasu podatka. Dati informaciju koliko različitih klasa postoji.
+*/
+
+		Select Count(Distinct Left(ProductNumber,2))
+		From Product 
+/*
+12. Koristeći prethodne tabele, uraditi sljedeće operacije:
+a) U tabeli Product kreirati kolonu klasa u koju će se smještati klase kolone ProductNumber pri čemu u kolonu neće biti moguće pohraniti više od dva znaka.
+b) Novoformiranu kolonu popuniti klasama iz kolone ProductNumber
+*/
+
+--a)
+Alter table Product 
+Add klasa char(2)
+
+--b)
+Update Product
+Set klasa= Left(ProductNumber,2)
+
+Select ProductNumber,klasa
+From  Product
+
+/*
+13. Kreirati tabelu Cost u kojoj će biti kolone WorkOrderID i PlannedCost tabele WorkOrderRouting. 
+Nakon toga dodati izračunatu (stalno pohranjenu) kolonu fening u kojoj će biti vrijednost feninga iz kolone PlannedCost. 
+Vrijednost feninga mora biti izražena kao cijeli broj (ne prihvata se oblik 0.20).
+*/
+
+Select  WorkOrderID,PlannedCost 
+into Cost
+From WorkOrderRouting
+	
+Alter table Cost
+Add fening int
+
+Update Cost
+Set fening=PlannedCost%1 *100
+
+	/*
+	moze se uraditi i ovako
+	Alter table Cost
+	Add fening as Cast(PlannedCost%1 *100 as int)
+	*/
+
+Select*
+From Cost
+/*
+14. U tabeli Cost dodati novu kolonu klasa u kojoj će biti oznaka 1 ako je vrijednost feninga manja od 50, odnosno, 2 ako je vrijednost feninga veća ili jednaka od 50.
+*/
+	Alter table Cost
+	Add klasa int
+	GO
+	Update Cost
+	Set klasa=1
+	Where fening<50
+
+	
+	Update Cost
+	Set klasa=2
+	Where fening>=50
+	Go
+/*
+15. U tabeli Product se nalazi kolona ProductLine. Prebrojati broj pojavljivanja svake od vrijednosti iz ove kolone, 
+a zatim dati informaciju koliko je klasa čiji je broj pojavljivanja manji, a koliko veći od srednje vrijednosti broja pojavljivanja.
+*/
+	Create or alter view  view_Broj_vrijednosti
+	As
+	Select ProductLine, Count(*) as UkupanBroj
+	From Product
+	Group by ProductLine
+
+	Select*
+	From view_Broj_vrijednosti
+
+	Select 'manje' as 'Manje,vece ili isto kao srednja vrijednost',Count(*) as 'Broj vrijednosti'
+	From view_Broj_vrijednosti
+	Where UkupanBroj < (Select Avg(UkupanBroj)
+						From view_Broj_vrijednosti)
+	Union
+	
+	Select 'vece'  ,Count(*) 
+	From view_Broj_vrijednosti
+	Where UkupanBroj > (Select Avg(UkupanBroj)
+						From view_Broj_vrijednosti)
+	Union
+							
+	Select 'isti' ,Count(*)
+	From view_Broj_vrijednosti
+	Where UkupanBroj = (Select Avg(UkupanBroj)
+						From view_Broj_vrijednosti)
+
+	Go
+/*
+16. Kreirati proceduru kojom će se u tabeli Product za ReorderPoint koji su manji od 100 izvršiti uvećanje za unijetu vrijednost parametra povecanje.
+*/
+	Select *
+	From Product
+	Go
+
+	Create or alter procedure udp_reorder
+		@povecanje int
+	As
+	Begin
+		Update Product
+		Set ReorderPoint = ReorderPoint + @povecanje
+		Where ReorderPoint <100
+	End
+	
+	Execute udp_reorder 1000
+
+	Go
+/*
+17. Kreirati proceduru kojom će se u tabeli Product vršiti brisanje zapisa prema unijetoj vrijednosti ProductSubcategoryID.
+*/
+	Create procedure proc_brisanje
+		@unesenaVrijednost int
+	As
+	Begin
+		Delete Product
+		Where ProductSubcategoryID = @unesenaVrijednost
+	End
+
+	Exec proc_brisanje 14
+
+
+	Select*
+	From Product
+	Where ProductSubcategoryID Is not null
+	Go
+/*
+18. Kreirati proceduru kojom će se u tabeli Product vršiti izmjena postojećeg u proizvoljni naziv boje. Npr. Black preimenovati u crna.
+*/
+
+	Create procedure proc_promjenaBoje
+		@postojecaBoja nvarchar(20),
+		@proizvoljnaBoja nvarchar(20)
+	As
+	Begin
+		Update Product
+		Set Color = @proizvoljnaBoja
+		Where Color = @postojecaBoja
+	End
+
+
+	Exec proc_promjenaBoje 'Black','crna'
+	
+	
+	Select *
+	From Product
+	Where COlor is not null
+
+
+	--Vjezbe 12:
+
+	--1
+/*
+a) Kreirati bazu podataka da proizvoljnim nazivom
+*/
+
+Create database Vjezbe12
+Use Vjezbe12
+
+Drop database Vjezbe12
+
+--omogućava kreiranje dijagrama baze
+
+/*
+Prilikom kreiranja tabela voditi računa o međusobnom odnosu između tabela.
+b) Kreirati tabelu radnik koja će imati sljedeću strukturu:
+	radnikID, cjelobrojna varijabla, primarni ključ
+	drzavaID, 15 unicode karaktera
+	loginID, 30 unicode karaktera
+	sati_god_odmora, cjelobrojna varijabla
+	sati_bolovanja, cjelobrojna varijabla
+*/
+
+
+	Create table radnik
+	(
+		radnikID int Constraint pk_radnika primary key(radnikID),
+		drzavaID nvarchar(15),  
+		loginID nvarchar(30),
+		sati_god_odmora int, 
+		sati_bolovanja int
+	);
+/*
+c) Kreirati tabelu kupovina koja će imati sljedeću strukturu:
+	kupovinaID, cjelobrojna varijabla, primarni ključ
+	status, cjelobrojna varijabla
+	radnikID, cjelobrojna varijabla
+	br_racuna, 15 unicode karaktera
+	naziv_dobavljaca, 50 unicode karaktera
+	kred_rejting, cjelobrojna varijabla
+*/
+	Create table kupovina
+	(
+		kupovinaID int Constraint pk_kupovina primary key (kupovinaID),
+		status int,
+		radnikID int,
+		br_racuna nvarchar(15),
+		naziv_dobavljaca nvarchar(50), 
+		kred_rejting int,
+		Constraint fk_kopovina foreign key (radnikID) references radnik (radnikID)  
+	);
+	
+
+/*
+d) Kreirati tabelu prodaja koja će imati sljedeću strukturu:
+	prodavacID, cjelobrojna varijabla, primarni ključ
+	prod_kvota, novčana varijabla
+	bonus, novčana varijabla
+	proslogod_prodaja, novčana varijabla
+	naziv_terit, 50 unicode karaktera
+*/
+
+	Create table prodaja
+	(
+		prodavacID int Constraint pk_prodavaca primary key (prodavacID),
+		prod_kvota money,
+		bonus money,
+		proslogod_prodaja money,
+		naziv_terit nvarchar(50),
+		Constraint fk_prodavac foreign key (prodavacID) references radnik (radnikID)
+	);
+
+	
+--2. Import podataka
+/*
+a) Iz tabela humanresources.employee baze AdventureWorks2014 u tabelu radnik importovati podatke po sljedećem pravilu:
+	BusinessEntityID -> radnikID
+	NationalIDNumber -> drzavaID
+	LoginID -> loginID
+	VacationHours -> sati_god_odmora
+	SickLeaveHours -> sati_bolovanja
+*/
+
+	Insert into radnik
+	Select  BusinessEntityID,NationalIDNumber,LoginID,VacationHours,SickLeaveHours
+	From AdventureWorks2019.HumanResources.Employee
+	
+	Select*
+	From radnik
+
+/*
+b) Iz tabela purchasing.purchaseorderheader i purchasing.vendor baze AdventureWorks2014 u tabelu kupovina importovati podatke po sljedećem pravilu:
+	PurchaseOrderID -> kupovinaID
+	Status -> status
+	EmployeeID -> radnikID
+	AccountNumber -> br_racuna
+	Name -> naziv_dobavljaca
+	CreditRating -> kred_rejting
+*/
+	Insert into kupovina
+	Select POH.PurchaseOrderID, POH.Status,POH.EmployeeID,V.AccountNumber,V.Name,V.CreditRating
+	From AdventureWorks2019.Purchasing.PurchaseOrderHeader As POH 
+	Inner Join AdventureWorks2019.Purchasing.Vendor AS V
+	On POH.PurchaseOrderID = V.BusinessEntityID
+
+	Select*
+	From kupovina
+/*
+c) Iz tabela sales.salesperson i sales.salesterritory baze AdventureWorks2014 u tabelu prodaja importovati podatke po sljedećem pravilu:
+	BusinessEntityID -> prodavacID
+	SalesQuota -> prod_kvota
+	Bonus -> bonus
+	SalesLastYear -> proslogod_prodaja
+	Name -> naziv_terit
+*/
+	
+	Insert into prodaja
+	Select SP.BusinessEntityID,SP.SalesQuota,SP.Bonus,ST.SalesLastYear,St.Name
+	From AdventureWorks2019.Sales.SalesPerson As SP 
+	inner join AdventureWorks2019.Sales.SalesTerritory As ST 
+	On SP.TerritoryID = ST.TerritoryID
+
+--napomena:
+--SalesLastYear se uzima iz tabele SalesTerritory
+
+--3.
+/*
+Iz tabela radnik i kupovina kreirati pogled view_drzavaID koji će imati sljedeću strukturu: 
+	- naziv dobavljača,
+	- drzavaID
+Uslov je da u pogledu budu samo oni zapisi čiji ID države počinje ciframa u rasponu od 40 do 49, te da se kombinacije dobavljača i drzaveID ne ponavljaju.
+*/
+
+	
+	Create or alter View view_drzavaID
+	As
+		Select Distinct K.naziv_dobavljaca,R.drzavaID 
+		From Vjezbe12.dbo.radnik as R
+		inner join Vjezbe12.dbo.kupovina As K
+		On R.radnikID = K.radnikID
+		Where left(R.drzavaID,2) between 40 and 49   
+		
+		Select *
+		From view_drzavaID
+
+		Go
+--4.
+/*
+Koristeći tabele radnik i prodaja kreirati pogled view_klase_prihoda koji će sadržavati ID radnika, ID države, količnik prošlogodišnje prodaje i prodajne kvote, 
+te oznaku klase koje će biti formirane prema pravilu: 
+	- <10			- klasa 1 
+	- >=10 i <20	- klasa 2 
+	- >=20 i <30	- klasa 3
+*/
+	
+Use Vjezbe12
+Go
+create or alter view view_klase_prihoda
+as
+select r.radnikID, r.drzavaID, p.proslogod_prodaja/p.prod_kvota as kolicnik, 1 as klasa 
+from radnik as r inner join prodaja as p
+on r.radnikID = p.prodavacID
+where p.proslogod_prodaja/p.prod_kvota < 10
+union
+select r.radnikID, r.drzavaID, p.proslogod_prodaja/p.prod_kvota as kolicnik, 2 as klasa 
+from radnik as r inner join prodaja as p
+on r.radnikID = p.prodavacID
+where p.proslogod_prodaja/p.prod_kvota >= 10 and p.proslogod_prodaja/p.prod_kvota<20
+union
+select r.radnikID, r.drzavaID, p.proslogod_prodaja/p.prod_kvota as kolicnik, 3 as klasa
+from radnik as r inner join prodaja as p
+on r.radnikID = p.prodavacID
+where p.proslogod_prodaja/p.prod_kvota >= 20 and p.proslogod_prodaja/p.prod_kvota<30
+
+select*
+from Vjezbe12.dbo.view_klase_prihoda
+
+Go
+--5.
+/*
+Koristeći pogled view_klase_prihoda kreirati proceduru proc_klase_prihoda koja će prebrojati broj klasa. 
+Procedura treba da sadrži naziv klase i ukupan broj pojavljivanja u pogledu view_klase_prihoda. Sortirati prema broju pojavljivanja u opadajućem redoslijedu.
+*/
+
+	Create procedure proc_klase 
+	as
+	Begin
+		Select klasa, count(klasa) as BrojPojavljivanja
+		From view_klase_prihoda
+		group by klasa
+		order by BrojPojavljivanja Desc
+	End
+
+	Exec proc_klase
+	Go
+--6.
+/*
+Koristeći tabele radnik i kupovina kreirati pogled view_kred_rejting koji će sadržavati kolone drzavaID, kreditni rejting i prebrojani broj pojavljivanja kreditnog rejtinga po ID države.
+*/
+	
+	Create or alter view view_kred_rejting
+	As
+		Select r.drzavaID,k.kred_rejting as nazivKredRej, Count (k.kred_rejting) as BrojKredRejtinga
+		From Vjezbe12.dbo.radnik as r 
+		inner join Vjezbe12.dbo.kupovina as k
+		on r.radnikID = k.radnikID
+		group by r.drzavaID,k.kred_rejting
+
+		Go
+
+		Select *
+		From view_kred_rejting
+--7.
+/*
+Koristeći pogled view_kred_rejting kreirati proceduru proc_kred_rejting koja će davati informaciju o najvećem prebrojanom broju pojavljivanja kreditnog rejtinga. 
+Procedura treba da sadrži oznaku kreditnog rejtinga i najveći broj pojavljivanja za taj kreditni rejting. Proceduru pokrenuti za sve kreditne rejtinge (1, 2, 3, 4, 5). 
+*/
+		Create or alter procedure  proc_kred_rejting
+			@kredRejting int
+		As
+		Begin
+			Select nazivKredRej,count(BrojKredRejtinga) as najveciPrebrojani
+			From view_kred_rejting
+			Where nazivKredRej = @kredRejting
+			group by nazivKredRej
+		End
+
+		Exec proc_kred_rejting '5'
+
+		Go
+--8.
+/*
+Kreirati tabelu radnik_nova i u nju prebaciti sve zapise iz tabele radnik. Nakon toga, svim radnicima u tabeli radnik_nova čije se ime u koloni loginID sastoji od 3 i manje slova, 
+loginID promijeniti u slučajno generisani niz znakova.
+*/
+Use Vjezbe12
+Go
+	
+	Insert into radnik_nova
+	Select *
+	From Vjezbe12.dbo.radnik
+
+	Select *
+	From radnik_nova
+
+	Update radnik_nova
+	set loginID = left(newid(),10);
+	where len(loginID)=3 
+--9.
+/*
+a) Kreirati pogled view_sume koji će sadržavati sumu sati godišnjeg odmora i sumu sati bolovanja za radnike iz tabele radnik_nova kojima je loginID promijenjen u slučajno generisani niz znakova 
+b) Izračunati odnos (količnik) sume bolovanja i sume godišnjeg odmora. Ako je odnos veći od 0.5 dati poruku 'Suma bolovanja je prevelika. Odnos iznosi: ______'. U suprotnom dati poruku 'Odnos je prihvaljiv i iznosi: _____'
+*/
+
+--10.
+/*
+a) Kreirati backup baze na default lokaciju.
+b) Obrisati bazu.
+c) Napraviti restore baze.
+*/
+
+/*
+Kreirati bazu podataka BrojIndeksa sa sljedećim parametrima:
+a) primarni i sekundarni data fajl:
+- veličina: 		5 MB
+- maksimalna veličina: 	neograničena
+- postotak rasta:	10%
+b) log fajl
+- veličina: 		2 MB
+- maksimalna veličina: 	neograničena
+- postotak rasta:	5%
+Svi fajlovi trebaju biti smješteni u folder c:\BP2\data\ koji je potrebno prethodno kreirati.
+*/
+
+
+
+
+/* Ispit iz Naprednih baza podataka 17.07.2021.godine */
+
+/*
+	(5) bodova
+
+	1. Kreiranje nove baze podataka kroz SQL kod, sa sljedećim parametrima:
+		a) primarni data fajl:
+			- veličina:				10 MB
+			- maksimalna veličina: 	neograničena
+			- postotak rasta:		15%
+
+		b) log fajl
+			- veličina:				5 MB
+			- maksimalna veličina: 	neograničena
+			- postotak rasta:		7%
+
+		Napomena: Svi fajlovi treba da budu kreirani u folderu C:\Ispit_NBP kojeg treba kreirati ako ne postoji
+*/
+	Create database IspitDrugiRok On primary
+	(
+		Name= 'IspitDrugiRok',
+		FileName= 'C:\BackUpBaze\IspitDrugiRok.mdf',
+		Size= 10 MB,
+		MaxSIze = Unlimited,
+		FileGrowth = 15%
+	),
+
+	(
+		Name= 'IspitDrugiRok_secondary',
+		FileName= 'C:\BackUpBaze\IspitDrugiRok_secondary.ndf',
+		Size= 10 MB,
+		MaxSIze = Unlimited,
+		FileGrowth = 15%
+	)
+	log on
+	(
+		Name= 'IspitDrugiRok_log',
+		FileName= 'C:\BackUpBaze\IspitDrugiRok_log.ldf',
+		Size= 5 MB,
+		MaxSIze = Unlimited,
+		FileGrowth = 7%
+	)
+	GO
+
+	Use IspitDrugiRok
+	Go
+/*
+	(5) bodova
+
+	2. Kreiranje korisnički definisani tipa podataka (alias nativnog tipa) "udt_CustomNaziv", nativnog tipa 100 
+	UNICODE karaktera i koji je obavezan unos.
+*/
+	Create type udt_CustomNaziv From nvarchar(100) not null
+	Go
+/*
+	(10) bodova
+
+	3. Kreiranje tabela i unošenje testnih podataka
+
+	Proizvod
+		ID, automatski generator cjelobrojnih vrijednosti - primarni ključ
+		Naziv, polje definisanog tipa "udt_CustomNaziv"
+		Zaliha, polje decimalnog tipa preciznosti 10 na dvije decimale (obavezan unos), DEFAULT je nula
+		MjernaJedinica, polje 3 UNICODE karaktera (obavezan unos)
+		Cijena, polje novčanog tipa (obavezan unos)
+		DatumKreiranja, polje za unos datuma i vremena dodavanja zapisa (obavezan unos), DEFAULT je datum i vrijeme unosa (poželjno UTC datum)
+		DatumModifikovanja, polje za unos datuma i vremena izmjene originalnog zapisa, DEFAULT je NULL
+
+	Adresa
+		ID, automatski generator jedinstvene vrijednosti i primarni ključ
+		Naziv1, polje za unos 60 UNICODE karaktera (obavezan unos)
+		Naziv2, polje za unos 60 UNICODE karaktera
+		Grad, polje za unos 50 UNICODE karaktera (obavezan unos)
+		PostanskiBroj, polje za unos 15 UNICODE karaktera (obavezan unos)
+		OznakaDrzave, polje za unos 3 UNICODE karaktera (obavezan unos)
+		DatumKreiranja, polje za unos datuma i vremena dodavanja zapisa (obavezan unos), DEFAULT je datum i vrijeme unosa (poželjno UTC datum)
+		DatumModifikovanja, polje za unos datuma i vremena izmjene originalnog zapisa, DEFAULT je NULL
+
+	Kupac
+		ID, automatski generator parnih cjelobrojnih vrijednosti
+		Ime, polje definisanog tipa "udt_CustomNaziv"
+		Prezime, polje definisanog tipa "udt_CustomNaziv"
+		Email, polje za unos 200 UNICODE karaktera
+		DatumKreiranja, polje za unos datuma i vremena dodavanja zapisa (obavezan unos), DEFAULT je datum i vrijeme unosa (poželjno UTC datum)
+		DatumModifikovanja, polje za unos datuma i vremena izmjene originalnog zapisa, DEFAULT je NULL
+
+	Prodavac
+		ID, automatski generator neparnih vrijednosti
+		RadnoMjesto, polje za unos 50 UNICODE karaktera (obavezan unos)
+		GodinaRodjenja, polje za unos cjelobrojnih vrijednosti (poželjno cjelobrojni tip do 2^15 -1 = 32,767)
+		Ime, polje definisanog tipa "udt_CustomNaziv"
+		Prezime, polje definisanog tipa "udt_CustomNaziv"
+		DaniGodisnjeg, polje cjelobrojnog tipa (obavezan unos)
+		DatumKreiranja, polje za unos datuma i vremena dodavanja zapisa (obavezan unos), DEFAULT je datum i vrijeme unosa (poželjno UTC datum)
+		DatumModifikovanja, polje za unos datuma i vremena izmjene originalnog zapisa, DEFAULT je NULL
+
+	Prodaja (kupac kupuje kod jednog prodavača)
+		ID, automatski generator vrijednosti
+		Kolicina, polje za unos decimalnih vrijednosti preciznosti 10 na dvije decimale (obavezan unos)
+		Iznos, polje za unos novčane vrijednosti (obavezan unos)
+		DatumKreiranja, polje za unos datuma i vremena dodavanja zapisa (obavezan unos), DEFAULT je datum i vrijeme unosa (poželjno UTC datum)
+		DatumModifikovanja, polje za unos datuma i vremena izmjene originalnog zapisa, DEFAULT je NULL
+*/
+
+
+	Create table Proizvod
+	(
+		ID int Identity(1,1) Constraint pk_proizvodID primary key(ID),
+		Naziv udt_CustomNaziv,
+		Zaliha decimal(10,2) not null Default 0,
+		MjernaJedinica nvarchar(3) not null,
+		Cijena money not null,
+		DatumKreiranja datetime not null Default (GetDate()),
+		DatumModifikovanja datetime Default Null
+	)
+
+	Go
+
+		 
+	Create table Adresa
+	(
+		ID int identity(1,1) Constraint pk_adresaID primary key (ID),
+		Naziv1 nvarchar(60) not null,
+		Naziv2 nvarchar(60),
+		Grad nvarchar(50) not null,
+		PostanskiBroj nvarchar(15) not null,
+		OznakaDrzave nvarchar(3) not null,
+		DatumKreiranja datetime not null Default (GetDate()),
+		DatumModifikovanja datetime Default Null
+	)
+	GO
+
+	Create table Kupac
+	(
+		ID int Identity(2,2) Constraint pk_kupacID primary key(ID),
+		Ime udt_CustomNaziv,
+		Prezime udt_CustomNaziv,
+		Email nvarchar(200),
+		DatumKreiranja datetime not null Default (GetDate()),
+		DatumModifikovanja datetime Default Null
+	)
+
+	Go
+
+	Create table Prodavac
+	(
+		ID int identity(1,2) Constraint pk_prodavacID primary key(ID),
+		RadnoMjesto nvarchar(50) not null,
+		GodinaRodjenja smallint,
+		Ime udt_CustomNaziv,
+		Prezime udt_CustomNaziv,
+		DaniGodisnjeg int not null,
+		DatumKreiranja datetime not null Default (GetDate()),
+		DatumModifikovanja datetime Default Null
+	)
+	Go
+
+	Create table  Prodaja
+	(
+		KupacID int,
+		ProdavacID int,
+		ID int identity(1,1),
+		Kolicina decimal(10,2) not null,
+		Iznos money not null,
+		DatumKreiranja datetime not null Default (GetDate()),
+		DatumModifikovanja datetime Default Null,
+		Constraint pk_kupac_prodavac primary key(KupacID,ProdavacID),
+		Constraint fk_prodaja_kupac foreign key(KupacID) references Kupac(ID),
+		Constraint fk_prodaja_prodavac foreign key(ProdavacID) references Prodavac(ID)
+	)
+
+	Go
+/*
+
+	(5) bodova
+
+	4. Izmjena tabela "Prodaja" i "Proizvod"
+
+		a) Modifikovati tabelu "Prodaja" tako što će se dodati ograničenje koje će spriječiti unos negativnih vrijednosti u
+		kolonu "Kolicina"
+		
+		
+		b) Modifikovati tabelu "Proizvod" tako što će se dodati ograničenje da kolona "Zaliha" ne može biti negativna
+*/
+	Alter table Prodaja
+	Add Constraint check_NoNegKolicina Check(Kolicina>=0)
+
+	Alter table Proizvod
+	Add Constraint check_NoNegZaliha Check(Zaliha>=0)
+/*
+	(10) bodova
+
+	5. Unošenje testnih podataka
+
+	a) Tabela "Proizvod":
+		Iz baze podataka AdventureWorks201x, a putem podupita dodati sve proizvode iz tabele Production.Product (Name, ListPrice)
+		čiji su cijena (ListPrice) i ukupna zaliha veći od nule. Zaliha se može dobiti iz tabele Production.ProductInventory (ukupno za
+		sve lokacije), a MjernaJedinica se nalazi u tabeli Production.UnitMeasure (UnitMeasureCode). U ovom slučaju koristiti samo
+		vrijednost kolone WeightUnitMeasureCode kao poveznicu. U slučaju da je WeightUnitMeasureCode NULL, staviti vrijednost "KG".
+		Napomena: Testirati da li su podaci uneseni.	
+		*/
+		
+		Insert into Proizvod(Naziv,Cijena,Zaliha,MjernaJedinica)
+		Select G.Name,G.ListPrice,G.UkupnaKolicina,G.UnitMeasureCode
+		From (Select P.Name, P.ListPrice,Sum(I.Quantity) AS UkupnaKolicina,UM.UnitMeasureCode 
+		From AdventureWorks2019.Production.Product AS P 
+		Inner Join AdventureWorks2019.Production.ProductInventory AS I
+		On P.ProductID = I.ProductID
+		Inner Join AdventureWorks2019.Production.UnitMeasure AS UM
+		ON IsNull(P.WeightUnitMeasureCode,'KG') = UM.UnitMeasureCode
+		Group by  P.Name, P.ListPrice,UM.UnitMeasureCode 
+		) AS G
+
+		Select*
+		From Proizvod
+		Go
+/*
+	b) Tabela "Adresa":
+		Iz baze podataka AdventureWorks201x, a putem podupita dodati po 10 zapisa iz tabele 
+		Person.Address (AddressLine1, AddressLine2, City, PostalCode)
+		i Person.StateProvince (CountryRegionCode) za države 
+		Njemačka (DE) i Francuska (FR) gdje adrese ne počinju brojevima i gdje AdressLine2 nije NULL.
+		Podaci treba da se unesu u jednom batch-u.
+		Napomena: Testirati da li su podaci uneseni.
+	
+*/
+
+	Insert into Adresa(Naziv1,Naziv2,Grad,PostanskiBroj,OznakaDrzave)
+	Select Top 10 M.AddressLine1,M.AddressLine2,M.City,M.PostalCode,M.CountryRegionCode
+	From (Select A.AddressLine1,A.AddressLine2,A.City,A.PostalCode,SP.CountryRegionCode
+		  From AdventureWorks2019.Person.Address AS A
+		  Inner Join AdventureWorks2019.Person.StateProvince AS SP
+		  On SP.StateProvinceID = A.StateProvinceID
+		  Where (SP.CountryRegionCode Like 'DE' Or SP.CountryRegionCode Like 'FR') ANd A.AddressLine1 NOT Like '[1-9]%' 
+				AND A.AddressLine2 NOT Like '[1-9]%' AND A.AddressLine2 IS Not Null
+		 ) AS M
+
+		 Select*
+		 FRom Adresa
+	
+/*
+	c) Tabela "Kupac":
+		Dodati proizvoljne zapise u tabelu jednom komandom. 
+		Napomena 1: Kolona Email se ne treba popunjavati u ovom koraku
+		Napomena 2: Testirati da li su podaci uneseni.
+
+*/
+	Insert into Kupac(Ime,Prezime)
+	Values('Hamza','Beganovic'),
+		  ('Edvin','Alicic'),
+		  ('Lionel','Messi'),
+		  ('Harun','Ahmic')
+
+	Select*
+	From Kupac
+/*
+	d) Tabela "Prodavac":
+		Iz baze podataka AdventureWorks201x, a putem podupita unijeti sve prodavače iz tabela Sales.SalesPerson i HumanResources.Employee
+		Napomena: Testirati da li su podaci uneseni.
+*/
+	Insert into Prodavac(RadnoMjesto,GodinaRodjenja,Ime,Prezime,DaniGodisnjeg)
+	Select E.JobTitle, Year(E.BirthDate),P.FirstName,P.LastName,E.VacationHours
+	From AdventureWorks2019.HumanResources.Employee AS E
+	Inner Join AdventureWorks2019.Sales.SalesPerson AS SP
+	On E.BusinessEntityID = SP.BusinessEntityID
+	Inner Join AdventureWorks2019.Person.Person AS P
+	On E.BusinessEntityID = P.BusinessEntityID
+
+	Select*
+	FRom Prodavac
+/*
+	(10) bodova
+
+	6. Izmijeniti tabele "Prodaja" i "Proizvod"
+
+	a) U tabelu "Prodaja" dodati nove kolone:
+		- "ProdajnaCijena", polje novčanog tipa, automatski generisan pri unosu zapisa kao količnik kolona "Iznos" i "Kolicina"
+		- "SifraProdaje", automatski generisana kao 15 karaktera bez povlake iz SQL funkcije koja generiše jedinstvene vrijednosti
+
+	b) U tabelu "Proizvod" dodati kolonu:
+		- "Nivelacija", polje za unos novčane vrijednosti
+*/
+	--a)
+
+	Alter table Prodaja
+	Add ProdajnaCijena   AS (Iznos/Kolicina) 
+	
+	Alter table Prodaja
+	Add SifraProdaje as left(newid(),15)  
+	
+	 ALTER TABLE Proizvod
+	 ADD Nivelacija MONEY
+
+	 Go
+/*
+	(10) bodova
+
+	7. Kreirati uskladištenu proceduru pod nazivom "usp_ProdajaProizvoda" koja će dodavati vrijednosti u tabelu "Prodaja" 
+	i modifikovati podatke u tabeli "Proizvod". Prilikom dodavanja potrebno je umanjiti iznos kolone "Zaliha" u tabeli "Proizvod", 
+	a u kolonu "Nivelacija" dodati razliku prodajne i trenutne cijene proizvoda.
+	
+	Napomena: Testirati da li su podaci ispravno uneseni/izmijenjeni na nekoliko različitih unosa.
+*/
+	
+	Create procedure usp_ProdajaProizvoda
+		@KupacID int,
+		@ProdavacID int,
+		@Kolicina decimal(10,2),
+		@Iznos money,
+		@ProizvodID int
+	
+	AS
+	Begin
+	Insert into Prodaja(KupacID,ProdavacID,Kolicina,Iznos)
+	Values(@KupacID,@ProdavacID,@Kolicina,@Iznos)
+
+	Update Proizvod
+	Set Zaliha = Zaliha - @Kolicina
+	Where ID = @ProizvodID
+
+	Update Proizvod
+	Set Nivelacija = (@Iznos/ @Kolicina) - Cijena 
+	Where ID = @ProizvodID
+
+	Update Proizvod
+	Set DatumModifikovanja = GetDate()
+	Where ID = @ProizvodID
+	End
+	
+	Go
+
+	Exec usp_ProdajaProizvoda 1,1,3.3,22,1 
+
+
+	Select*
+	FRom Prodaja
+
+	Select*
+	FRom Kupac
+
+	Select*
+	From Proizvod
+/* GRANICA ZA OCJENU 6 (55 bodova) */
+
+/*
+	(10) bodova
+
+	8. Kreirati:
+	
+	a) Tabelu "CijenaLog" sa kolonama:
+		- "ProizvodID", cjelobrojna vrijednost
+		- "Datum", datum i vrijeme (poželjno UTC vrijednost)
+		- "Cijena", novčana vrijednost
+
+	b) Okidač "tg_ins_cijene" kojim će se evidentirati datum i vrijeme unosa zapisa u tabelu "Prodaja", kao i ID proizvoda i cijena.
+	
+	Napomena: Testirati okidač pomoću već kreirane uskladištene procedure "usp_ProdajaProizvoda"
+*/
+	Create table CijenaLog 
+	(
+		ProizvodID int Constraint pk_cijenaLog primary key(ProizvodID),
+		Datum datetime,
+		Cijena money
+	)
+	Go
+
+
+	Exec usp_ProdajaProizvoda 2,3,132.3,77,4 
+	GO
+
+	Create or alter trigger tg_ins_cijene On
+	Prodaja after insert
+	AS
+	Begin
+		Insert into CijenaLog(ProizvodID,Datum,Cijena)
+		Select I.ID,GetDate(),I.ProdajnaCijena
+		From inserted AS I
+	End
+
+	Select*
+	From CijenaLog
+	Go
+/*
+	(5) bodova
+
+	9. Kreirati korisnički definisanu funkciju "udf_Spajanje" koja prima dva parametra po 60 UNICODE karaktera. Ako je drugi
+	parametar postojeći (nije NULL i nije prazan), razdvojiti ga zarezom od prvog, u suprotnom ne ispisivati zarez.
+*/
+		Create or alter function udf_Spajanje (@Naziv1 nvarchar(60),@Naziv2 nvarchar(60))
+		Returns nvarchar(60)
+		AS
+		Begin
+			Declare @Naziv as nvarchar(200)
+
+			IF @Naziv2 IS  Not Null 
+			
+			Set @Naziv =  @Naziv1 + ',' + @Naziv2;
+			Else 
+			Set @Naziv = @Naziv1 + @Naziv2;
+		
+		Return @Naziv
+		End
+/*	
+	(5) bodova
+
+	10. Kreirati uskladištenu proceduru koja će u vašoj bazi podataka, svim kupcima generisati novu email adresu u formatu: Ime.Prezime@size.ba
+	i podatak da je postojeći zapis u tabeli modifikovan.
+*/
+	Create or alter procedure proc_izmjenaPodataka
+	AS
+	Begin
+		Update Kupac
+		Set Email = Ime + '.' + Prezime+ '@size.ba', DatumModifikovanja = GetDate()
+	End
+
+	Exec proc_izmjenaPodataka
+
+	Select*
+	FRom Kupac
+	Go
+/*
+	(5) bodova
+
+	11. Izmjeniti tabelu "Adresa" na sljedeći način:
+		
+		a) Dodati novu kolonu "Naziv" - polje za unos 125 UNICODE karaktera
+
+		
+		b) Ažurirati cijelu tabelu tako što će se u kolonu "Naziv" unijeti vrijednosti iz kolona "Naziv1" i "Naziv2", a koje će biti 
+		generisane pomoću prethodno kreirane korisnički definisane funkcije "udf_Spajanje"
+		
+		c) Ukloniti kolone "Naziv1" i "Naziv2" iz definicije tabele
+
+		Napomena: Provjeriti da li su vrijednosti ispravno unesene, te da li su kolone ispravno uklonjene	
+*/
+	Alter table Adresa
+	Add Naziv nvarchar(125)
+	Go
+
+	Update Adresa
+	Set Naziv =  dbo.udf_Spajanje(Naziv1,Naziv2), DatumModifikovanja = GetDate()
+	
+	Select*
+	From Adresa
+
+	Alter table Adresa
+	Drop column Naziv1
+
+	Alter table Adresa
+	Drop column Naziv2
+
+
+/*
+	12. Kreiranje pogleda (5)
+
+	Kreirati pogled "vw_ProcenatGodisnjegOdmora" koji će se sastojati od kolona: "ID", "Ime", "Prezime", "RadnoMjesto",
+	"DaniGodisnjeg", "ProcenatGO". U koloni "ProcenatGO" će se prikazati procentualna vrijednost dana godišnjeg odmora 
+	u odnosu na ukupan broj dana godišnjeg odmora svih uposlenika.
+
+	Napomena 1: Kolona "ProcenatGO" treba da pokazuje vrijednost na najmanje 2 decimale
+	Napomena 2: Provjeriti ispis pogleda
+*/
+Select*
+FRom Prodavac
+	
+	Create view vw_ProcenatGodisnjegOdmora
+	AS
+		Select ID,Ime,Prezime,RadnoMjesto,DaniGodisnjeg, Convert(decimal(10,2), Convert(decimal(10,2),DaniGodisnjeg) / CONVERT(decimal(10,2), 
+																				(Select SUM(P.DaniGodisnjeg) From Prodavac AS P)))  AS ProcenatGO 
+		From Prodavac
+		Group by ID,Ime,Prezime,RadnoMjesto,DaniGodisnjeg
+
+/*
+	(5) bodova
+
+	13. Kreirati backup vaše baze na istu lokaciju na kojoj se nalazi trenutna baza (C:\Ispit_NBP) i izbrisati sve zapise iz tabela
+*/
+	Backup database IspitDrugiRok
+	To disk = 'C:\Ispit_NBP\IspitDrugiRok.bak'
+
+
+	Alter table Prodaja
+	Drop Constraint fk_prodaja_kupac
+
+	Alter table Prodaja
+	Drop Constraint fk_prodaja_prodavac
+
+	Delete From Adresa
+	Delete From CijenaLog
+	Delete From Kupac
+	Delete From Prodavac
+
+
+/*
+	(5) bodova
+
+	14. Uraditi restore rezervene kopije baze podataka
+*/
+
+	Restore database IspitDrugiRok 
+	from disk =  'C:\Ispit_NBP\IspitDrugiRok.bak'
+
+
+	/* Ispit iz Naprednih baza podataka 03.07.2021.godine*/
+
+/*
+	1. Kreiranje nove baze podataka kroz SQL kod, sa default postavkama servera  (5)
+*/
+
+
+
+
+
+/*
+	2a. Kreiranje tabela i unošenje testnih podataka (10)
+
+	Unutar svoje baze podataka kreirati tabele sa slijedećom strukturom:
+
+Pacijenti
+	PacijentID, automatski generator neparnih vrijednosti - primarni ključ
+	JMB, polje za unos 13 UNICODE karaktera (obavezan unos) - jedinstvena vrijednost
+	Prezime, polje za unos 50 UNICODE karaktera (obavezan unos)
+	Ime, polje za unos 50 UNICODE karaktera (obavezan unos)
+	DatumRodjenja, polje za unos datuma, DEFAULT je NULL
+	DatumKreiranja, polje za unos datuma dodavanja zapisa (obavezan unos) DEFAULT je datum unosa
+	DatumModifikovanja, polje za unos datuma izmjene originalnog zapisa , DEFAULT je NULL
+
+Titule
+	TitulaID, automatski generator vrijednosti - primarni ključ
+	Naziv, polje za unos 100 UNICODE karaktera (obavezan unos)
+	DatumKreiranja, polje za unos datuma dodavanja zapisa (obavezan unos) DEFAULT je datum unosa
+	DatumModifikovanja, polje za unos datuma izmjene originalnog zapisa , DEFAULT je NULL
+
+Osoblje (Jednu titulu može imati više osoba)
+	OsobljeID, automatski generator vrijednosti i primarni kljuè
+	Prezime, polje za unos 50 UNICODE karaktera (obavezan unos)
+	Ime, polje za unos 50 UNICODE karaktera (obavezan unos)
+	DatumKreiranja, polje za unos datuma dodavanja zapisa (obavezan unos) DEFAULT je datum unosa
+	DatumModifikovanja, polje za unos datuma izmjene originalnog zapisa , DEFAULT je NULL
+
+Pregledi (Pacijent može izvršiti samo jedan pregled kod istog doktora unutar termina)
+	PregledID, polje za unos cijelih brojeva (obavezan unos)
+	DatumPregleda, polje za unos datuma (obavezan unos) DEFAULT je datum unosa
+	Dijagnoza polje za unos 1000 UNICODE karaktera (obavezan unos)
+*/
+Use AdventureWorks2019
+Drop database ispitPrviRok
+Create database ispitPrviRok
+Use ispitPrviRok
+
+		Create table Pacijenti
+		(
+			PacijentID int Identity(1,2) Constraint pk_pacijent primary key (PacijentID),
+			JMB nvarchar(13) not null Unique,
+			Prezime nvarchar(50) not null,
+			Ime nvarchar(50) not null,
+			DatumRodjenja date Default null,
+			DatumKreiranja date not null default GetDate(),
+			DatumModifikovanja date default null
+
+		);
+
+		Create table Titule
+		(
+			TitulaID int Identity(1,1) Constraint pk_titule primary key (TitulaID),
+			Naziv nvarchar(100) not null ,
+			DatumKreiranja date not null DEFAULT GetDate(),
+			DatumModifikovanja date  DEFAULT NULL
+		);
+
+		
+		CREATE TABLE Osoblje (
+			OsobljeID int IDENTITY(1,1),
+			TitulaID int,
+			Prezime nvarchar(50) NOT NULL,
+			Ime nvarchar(50) NOT NULL,
+			DatumKreiranja date NOT NULL DEFAULT GETDATE(),
+			Constraint pk_osoblje primary key (OsobljeID),
+			CONSTRAINT FK_Osoblje_Titule FOREIGN KEY(TitulaID) REFERENCES Titule(TitulaID)
+		);
+
+		Create table Pregledi
+		(
+			PacijentID int,
+			OsobljeID int,
+			PregledID int not null,
+			DatumPregleda date not null Default GetDate(),
+			Dijagnoza nvarchar(1000) not null
+			Constraint pk_pacijenti_osoblje primary key (PacijentID,OsobljeID),
+			Constraint fk_pacijenti foreign key (PacijentID) references Pacijenti(PacijentID),
+			Constraint fk_osoblje foreign key (OsobljeID) references Osoblje(OsobljeID)
+		);
+
+
+		Drop table Osoblje
+		Drop table Pregledi 
+/*
+		2b. Izmjena tabele "Pregledi" (5)
+
+Modifikovati tabelu Pregledi i dodati dvije kolone:
+DatumKreiranja, polje za unos datuma dodavanja zapisa (obavezan unos) DEFAULT je datum unosa
+DatumModifikovanja, polje za unos datuma izmjene originalnog zapisa , DEFAULT je NULL
+*/
+
+
+	Alter  table Pregledi
+	Add DatumKreiranja date not null  Default GetDate()
+	
+	Alter table Pregledi
+	Add DatumModifikovanja date Default Null
+
+/*
+		2c. Unošenje testnih podataka (10)
+
+Iz baze podataka Northwind, a putem podupita dodati sve zapise iz tabele Employees:
+(LastName, FirstName, BirthDate) u tabelu Pacijenti. Za JMB koristiti SQL funkciju koja
+generiše slučajne i jedinstvene ID vrijednosti. Obavezno testirati da li su podaci u tabeli.
+
+U tabelu Titule, jednom komandom, dodati: Stomatolog, Oftalmolog, Ginekolog,
+Pulmolog i Onkolog. Obavezno testirati da li su podaci u tabeli.
+
+U tabelu Osoblje, jednom komandom, dodati proizvoljna dva zapisa. 
+Obavezno testirati da li su podaci u tabeli.
+
+*/
+
+	Insert into Pacijenti (JMB,Prezime,Ime,DatumRodjenja)
+	Select Left(newid(),13),LastName,FirstName,BirthDate
+	From NORTHWND.dbo.Employees
+
+	Select *
+	From Pacijenti
+
+	Insert into Titule (Naziv)
+	Values('Stomatolog'), ('Oftalmolog'), ('Ginekolog'),('Pulmolog') , ('Onkolog')
+
+	Select *
+	From Titule
+
+	Insert into Osoblje(Prezime,Ime)
+	Values('Leo', 'Messi'),
+		  ('Lewis', 'Hamilton')
+
+	Select *
+	From Osoblje
+	Go
+/*
+	2d. Kreirati uskladištenu proceduru (10) 
+
+U tabelu Pregledi dodati 4 zapisa proizvoljnog karaktera. Obavezno testirati da li su podaci u tabeli.
+*/
+Use ispitPrviRok
+Drop proc proc_dodaj
+
+GO
+
+
+		Create or alter procedure proc_dodaj
+		(
+			@PacijentID int,
+			@OsobljeID int,
+			@PregledID int,
+			@DatumPregleda date,
+			@Dijagnoza nvarchar(1000)
+		)
+		As
+		Begin
+			Insert into Pregledi(PacijentID,OsobljeID,PregledID,DatumPregleda,Dijagnoza)
+			VALUES(@PacijentID, @OsobljeID, @PregledID, @DatumPregleda, @Dijagnoza)
+					
+			return 0
+		End
+
+	
+EXEC proc_dodaj 1, 1, 1, '2020-09-19', 'Pokvaren zub'
+EXEC proc_dodaj 3, 2, 2, '2021-03-09', 'Kontrola'
+EXEC proc_dodaj 5, 1, 3, '2021-04-03', 'Kontrola'
+EXEC proc_dodaj 7, 1, 4, '2021-07-07', 'Vađenje zuba'
+
+Select*
+From Pregledi
+
+/*
+	3. Kreiranje procedure za izmjenu podataka u tabeli "Pregledi" (10)
+
+Koja će izvršiti izmjenu podataka u tabeli Pregledi, tako što će modifikovati dijagnoza za određeni pregled. 
+Također, potrebno je izmjeniti vrijednost još jednog atributa u tabeli kako bi zapis o poslovnom procesu
+bio potpun. Obavezno testirati da li su podaci u tabeli modifikovani
+*/
+
+	Create proc proc_izmjena
+		@PacijentID int,
+		@OsobljeID int,
+		@PregledID int,
+		@DatumPregleda date,
+ 		@Dijagnoza nvarchar(1000)
+	As
+	Begin
+		Update Pregledi
+		Set DatumPregleda = @DatumPregleda
+		Where PacijentID = @PacijentID And OsobljeID = @OsobljeID
+		
+		Update Pregledi
+		Set Dijagnoza = @Dijagnoza 
+		Where PacijentID = @PacijentID And OsobljeID = @OsobljeID
+	End
+
+	Select*
+	From Pregledi
+	
+	Exec proc_izmjena 1,1,1,'2021-02-22','Hamza promijenio' 
+	Go
+
+/*
+	4. Kreiranje pogleda (5)
+
+Kreirati pogled sa slijedećom definicijom: Prezime i ime pacijenta, datum pregleda, titulu, prezime i ime
+doktora, dijagnozu i datum zadnje izmjene zapisa, ali samo onim pacijentima kojima je modfikovana
+dijagnoza. Obavezno testirati funkcionalnost view objekta.
+
+*/	
+		UPDATE Pregledi
+		SET DatumModifikovanja = '2021-07-03'
+		WHERE PacijentID = 1
+		Go
+
+		
+	CREATE or alter VIEW view_modifikovaniPodaci
+	AS
+	SELECT P.Prezime, P.Ime, PR.DatumPregleda, T.Naziv, O.Prezime AS PrezimeDoktora, O.Ime AS ImeDoktora, PR.Dijagnoza, PR.DatumModifikovanja
+	FROM Pacijenti AS P
+	INNER JOIN Pregledi AS PR
+	ON P.PacijentID = PR.PacijentID
+	INNER JOIN Osoblje AS O
+	ON PR.OsobljeID = O.OsobljeID
+	INNER JOIN Titule AS T
+	ON O.OsobljeID = T.TitulaID
+	WHERE PR.DatumModifikovanja IS NOT NULL
+
+		Select*
+		From view_modifikovaniPodaci
+		
+		
+		
+/* GRANICA ZA OCJENU 6 (55 bodova) */
+
+
+
+/*
+	5. Prilagodjavanje tabele "Pacijenti" (5)
+
+Modifikovati tabelu Pacijenti i dodati slijedeće tri kolone:
+	Email, polje za unos 100 UNICODE karaktera, DEFAULT je NULL
+	Lozinka, polje za unos 100 UNICODE karaktera, DEFAULT je NULL
+	Telefon, polje za unos 100 UNICODE karaktera, DEFAULT je NUL
+*/
+
+		Alter table Pacijenti
+		Add Email nvarchar(100) default null
+
+		Alter table Pacijenti
+		Add Lozinka nvarchar(100) default null
+
+		Alter table Pacijenti
+		Add Telefon nvarchar(100) default null
+
+
+/*
+	6. Dodavanje dodatnih zapisa u tabelu "Pacijenti" (5)
+
+Kreirati uskladištenu proceduru koja će iz baze podataka AdventureWorks i tabela:
+Person.Person, HumanResources.Employee, Person.Password, Person.EmailAddress i
+Person.PersonPhone mapirati odgovarajuće kolone i prebaciti sve zapise u tabelu Pacijenti.
+Obavezno testirati da li su podaci u tabeli
+
+*/
+
+Select*
+From Pacijenti
+Go
+
+	Create or alter proc proc_dodatiPodatke
+	As
+	Begin
+		Insert into Pacijenti(JMB,Prezime,Ime,DatumRodjenja,DatumKreiranja,DatumModifikovanja,Email,Lozinka,Telefon)
+		Select left(PP.rowguid,13),PP.LastName,PP.FirstName,E.BirthDate,GetDate(),PP.ModifiedDate,Ea.EmailAddress, Pas.PasswordSalt,Pho.PhoneNumber
+		From AdventureWorks2019.Person.Person As PP
+		Inner Join AdventureWorks2019.HumanResources.Employee As E
+		On PP.BusinessEntityID = E.BusinessEntityID
+		inner Join AdventureWorks2019.Person.Password AS Pas
+		On PP.BusinessEntityID = Pas.BusinessEntityID
+		Inner Join AdventureWorks2019.Person.EmailAddress As EA
+		On PP.BusinessEntityID = EA.BusinessEntityID
+		Inner Join AdventureWorks2019.Person.PersonPhone As Pho
+		On PP.BusinessEntityID = Pho.BusinessEntityID
+
+	End
+
+	Exec proc_dodatiPodatke
+	Select*
+	From Pacijenti
+
+	Go
+
+/*
+	7. Izmjena podataka u tabel "Pacijenti" (10)
+
+Kreirati uskladištenu proceduru koja će u vašoj bazi podataka, svim pacijentima generisati novu email
+adresu u formatu: Ime.Prezime@size.ba, lozinku od 12 karaktera putem SQL funkciju koja generiše
+slučajne i jedinstvene ID vrijednosti i podatak da je postojeći zapis u tabeli modifikovan.
+*/
+
+	Create proc proc_IzmjenaEmailAdrese
+	AS
+	Begin
+		Update Pacijenti
+		Set Email = Ime + '.' + Prezime +'@size.ba'
+		
+		Update Pacijenti
+		Set Lozinka = left(newid(),12)
+	End
+
+	Exec proc_IzmjenaEmailAdrese
+
+	Select *
+	from Pacijenti
+/*
+	8. Kriranje upita i indeksa (5)
+
+Napisati upit koji prikazuje prezime i ime pacijenta, datum pregleda, dijagnozu i spojene podatke o
+doktoru (titula, prezime i ime doktora). U obzir dolaze samo oni pacijenti koji imaju dijagnozu ili čija
+email adresa počinje sa slovom „L“. 
+Nakon toga kreirati indeks koji će prethodni upit, prema vašem mišljenju, maksimalno ubrzati
+*/
+
+
+	
+/*
+	9. Brisanje pacijenata bez pregleda (5)
+
+Kreirati uskladištenu proceduru koja briše sve pacijente koji nemaju realizovan niti jedan pregled.
+Obavezno testirati funkcionalnost procedure. 
+*/
+
+use ispitPrviRok
+go
+	Create proc proc_brisanje
+	As
+	Begin
+		Delete Pacijenti
+		FROM ispitPrviRok.dbo.Pacijenti As P
+		LEFT JOIN ispitPrviRok.dbo.Pregledi As Pr 
+		ON Pr.PacijentID = P.PacijentID
+		WHERE Pr.PacijentID IS NULL 
+	End
+
+	Exec proc_brisanje
+
+	Select *
+	From Pacijenti
+
+
+
+/*
+	10a. Backup baze podataka (5)
+Kreirati backup vaše baze na default lokaciju servera	
+*/
+
+	Backup database IspitPrviRok
+	to disk 'IspitPrviRok.bak'
+
+/*
+	10b. Brisanje svih zapisa iz tabela (5)
+Kreirati proceduru koja briše sve zapise iz svih tabela unutar jednog izvršenja. Testirati da li su podaci
+obrisani	
+*/
+	
+	Create or alter proc proc__brisanje
+	As
+	Begin
+		Alter table Osoblje
+		Drop Constraint fk_osoblje_titule
+
+		Alter table Pregledi
+		Drop Constraint fk_osoblje
+		
+		Alter table Pregledi
+		Drop Constraint fk_pacijenti
+
+		DELETE FROM Osoblje
+		DELETE FROM Pacijenti
+		DELETE FROM Pregledi
+		DELETE FROM Titule
+	End
+
+	Exec proc__brisanje
+
+/*
+	10c. Restore baze podataka (5)
+Uraditi restore rezervene kopije baze podataka 
+*/
+ 
+--Ispit sa fita
+
+/* 1. Kreirati bazu podataka pod nazivom: BrojDosijea (npr. 2046) bez posebnog kreiranja data i log fajla.*/
+
+		Use  radna
+
+/*2.
+U vašoj bazi podataka keirati tabele sa sljede�im parametrima:
+- Kupci
+	- KupacID, automatski generator vrijednosti i primarni ključ
+ 	- Ime, polje za unos 35 UNICODE karaktera (obavezan unos),
+	- Prezime, polje za unos 35 UNICODE karaktera (obavezan unos),
+	- Telefon, polje za unos 15 karaktera (nije obavezan),
+	- Email, polje za unos 50 karaktera (nije obavezan),
+	- KorisnickoIme, polje za unos 15 karaktera (obavezan unos) jedinstvena vrijednost,
+	- Lozinka, polje za unos 15 karaktera (obavezan unos)
+- Proizvodi
+	- ProizvodID, automatski generator vrijednosti i primarni ključ
+	- Sifra, polje za unos 25 karaktera (obavezan unos)
+	- Naziv, polje za unos 50 UNICODE karaktera (obavezan unos)
+	- Cijena, polje za unos decimalnog broj (obavezan unos)
+	- Zaliha, polje za unos cijelog broja (obavezan unos)
+- Narudzbe 
+ 	- NarudzbaID, automatski generator vrijednosti i primarni ključ
+ 	- KupacID, spoljni ključ prema tabeli Kupci,
+	- ProizvodID, spoljni ključ prema tabeli Proizvodi,
+	- Kolicina, polje za unos cijelog broja (obavezan unos)
+	- Popust, polje za unos decimalnog broj (obavezan unos), DEFAULT JE 0
+*/
+
+	  Create table Kupci
+	  (
+		KupacID int Identity(1,1) Constraint pk_kupac primary key (KupacID),
+ 		Ime nvarchar(35) not null,
+		Prezime nvarchar(35) not null,
+		Telefon nvarchar(15) null,
+		Email nvarchar(50) null,
+		KorisnickoIme  nvarchar(15) not null unique,
+		Lozinka nvarchar(15) not null
+	  );
+
+
+	  Create table Proizvodi
+	  (
+		ProizvodID int Identity(1,1) Constraint pk_proizvod primary key (ProizvodID),
+		Sifra nvarchar(25) not null,
+		Naziv nvarchar(50) not null,
+		Cijena decimal(8,2) not null,
+		Zaliha int not null
+	  );
+
+	  Create table Narudzbe
+	  (
+		 NarudzbaID int identity(1,1) Constraint pk_narudzbe primary key (NarudzbaID),
+		 KupacID int Constraint fk_narudzbe_kupci foreign key (KupacID) references Kupci(KupacID),
+		 ProizvodID int Constraint fk_narudzbe_proivodi foreign key (ProizvodID) references Proizvodi(ProizvodID),
+		 Kolicina int not null,
+		 Popust decimal(8,2) not null Default(0)
+	  );
+	
+/*3.
+ Modifikovati tabele Proizvodi i Narudzbe i to sljedeca polja:
+	- Zaliha (tabela Proizvodi) - omoguciti unos decimalnog broja
+	- Kolicina (tabela Narudzbe) - omoguciti unos decimalnog broja
+*/
+	Alter table Proizvodi
+	Alter column Zaliha decimal(8,2)
+
+	Alter table Narudzbe
+	Alter column Kolicina Decimal(8,2)
+
+/*4.
+Koristeci bazu podataka AdventureWorksLT 2012 i tabelu SalesLT.Customer, preko INSERT I SELECT komande importovati 10 zapisa
+u tabelu Kupci i to sljedece kolone:
+	- FirstName -> Ime
+	- LastName -> Prezime
+	- Phone -> Telefon
+	- EmailAddress -> Email
+	- Sve do znaka '@' u koloni EmailAddress -> KorisnickoIme
+	- Prvih 8 karaktera iz kolone PasswordHash -> Lozinka
+*/	
+			
+	Insert into Kupci(Ime,Prezime,Telefon,Email,KorisnickoIme,Lozinka)
+	Select Top 10 FirstName,LastName,Phone,EmailAddress, Left(EmailAddress,CHARINDEX('@',EmailAddress)-1),Left(PasswordHash,8)
+	From AdventureWorksLT2019.SalesLT.Customer
+
+	Select*
+	From Kupci
+	
+/*5.
+Koristeci bazu podataka AdventureWorksLT2012 i tabelu SalesLT.Product importovati u temp tabelu po
+nazivom tempBrojDosijea (npr. temp2046) 5 proizvoda i to sljedece kolone:
+	
+	- ProductName -> Sifra
+	- Name -> Naziv
+	- StandardCost -> Cijena
+*/
+		Select Top 5 ProductNumber As Sifra,Name As Naziv,StandardCost As Cijena
+		into temp132
+		From AdventureWorksLT2019.SalesLT.Product
+
+		Select*
+		From temp132
+	Go
+/*6.
+. U vašoj bazi podataka kreirajte stored proceduru koja ce raditi INSERT podataka u tabelu Narudzbe. 
+Podaci se moraju unijeti preko parametara. Takoder , u proceduru dodati ažuriranje (UPDATE) polja 'Zaliha' (tabela Proizvodi) u 
+zavisnosti od prosljeđene količine. Proceduru pohranite pod nazivom usp_Narudzbe_Insert.
+*/
+	Create or alter procedure proc_inserNarudzbe
+		@KupacID int,
+		@ProizvodID int,
+		@Kolicina decimal(8,2),
+		@Popust decimal(8,2) 
+	As
+	Begin
+		Insert into Narudzbe
+		Values(@KupacID,@ProizvodID,@Kolicina,@Popust)
+
+		Update Proizvodi
+		Set Zaliha = Zaliha - @Kolicina
+		WHERE ProizvodID = @ProizvodID
+
+	End
+
+	INSERT INTO Proizvodi
+	SELECT Sifra, Naziv, Cijena, 100
+	FROM temp132
+
+	Select*
+	From Narudzbe
+
+	Select* 
+	From Proizvodi
+	
+	Go
+
+/*7.
+ Koristeći proceduru koju ste kreirali u prethodnom zadatku kreirati 5 narudžbi.
+*/
+
+	
+	Exec proc_inserNarudzbe 3,2,34,2.2
+	Exec proc_inserNarudzbe 4,5,22,0.9
+	Exec proc_inserNarudzbe 6,2,11,0.1	
+	Exec proc_inserNarudzbe 10,4,24,0.2
+	Exec proc_inserNarudzbe 1,5,77,0.3
+	Exec proc_inserNarudzbe 8,3,45,0.6
+
+	Select *
+	From Narudzbe
+
+	
+	Select *
+	From Proizvodi
+	Go
+
+/*8.
+ U vašoj bazi podataka kreirajte view koji će sadržavati sljedeca polja: ime kupca, prezime kupca, telefon, 
+ šifra proizvoda, naziv proizvoda, cijena, kolicina, te ukupno. View pohranite pod nazivom view_Kupci_Narudzbe.
+*/
+	
+	Create or alter view view_Kupci_Narudzbe
+	As
+		Select K.Ime,K.Prezime,K.Telefon,P.Sifra,P.Naziv,P.Cijena,N.Kolicina, Sum((P.Cijena - (P.Cijena * N.Popust)) * N.Kolicina ) As Ukupno
+		From Kupci As K
+		Inner Join Narudzbe AS N 
+		On K.KupacID = N.KupacID
+		Inner Join Proizvodi As P
+		On N.ProizvodID = P.ProizvodID
+		group by K.Ime,K.Prezime,K.Telefon,P.Sifra,P.Naziv,P.Cijena,N.Kolicina
+
+		Select*
+		From view_Kupci_Narudzbe
+/*9.
+. U vašoj bazi podataka kreirajte stored proceduru koja ce na osnovu proslijedenog imena ili 
+prezimena kupca (jedan parametar) kao rezultat vratiti sve njegove narudžbe. 
+Kao izvor podataka koristite view kreiran u zadatku 8. Proceduru pohranite pod nazivom usp_Kupci_Narudzbe.
+*/
+Go
+
+	Create Or Alter proc proc_Kupci_Narudzbe
+		@Ime nvarchar(15) = null	
+	AS
+	Begin
+		Select Ime, Prezime,Telefon,Sifra,Naziv,Cijena,Kolicina,Ukupno
+		From view_Kupci_Narudzbe
+		Where (Ime =@Ime Or
+			Ime = null) Or
+			  (Prezime = @Ime OR
+			  Prezime = Null)
+	End
+
+	Exec proc_Kupci_Narudzbe 'Carreras'
+	Go
+/*10.
+. U vašoj bazi podataka kreirajte stored proceduru koja ce raditi DELETE zapisa iz tabele Proizvodi.
+Proceduru pohranite pod nazivom usp_Proizvodi_Delete. Pokušajte obrisati jedan od proizvoda kojeg ste dodatli u zadatku 5.
+Modifikujte proceduru tako da obriše proizvod i svu njegovu historiju prodaje (Narudzbe).
+*/
+
+	Create proc proc_Proizvodi_Delete
+		@ProizvodID int
+	AS
+	Begin
+		Delete 
+		From Narudzbe
+		Where ProizvodID In
+		(	
+			Select ProizvodID
+			From Proizvodi
+			Where ProizvodID = @ProizvodID
+		)
+
+		Delete 
+		From Proizvodi
+		Where ProizvodID = @ProizvodID
+	End
+
+	Exec proc_Proizvodi_Delete 3
+
+	Select *
+	From Narudzbe
+
+	Select *
+	From Proizvodi
